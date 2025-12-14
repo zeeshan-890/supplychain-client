@@ -88,24 +88,6 @@ export default function ProfilePage() {
                         </div>
                     </CardContent>
                 </Card>
-
-                {/* Account Info */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Account Information</CardTitle>
-                        <CardDescription>
-                            Additional account details
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <p className="text-sm text-muted-foreground">User ID</p>
-                                <p className="font-medium">#{user.id}</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
             </div>
         </Container>
     );

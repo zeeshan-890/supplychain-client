@@ -102,17 +102,17 @@ export default function InventoryPage() {
     const openEditDialog = (item: Inventory) => {
         setEditingItem(item);
         setFormData({
-            productId: item.productId.toString(),
-            warehouseId: item.warehouseId.toString(),
+            productId: item.product?.id?.toString() || item.productId?.toString() || '',
+            warehouseId: item.warehouse?.id?.toString() || item.warehouseId?.toString() || '',
             quantity: item.quantity.toString()
         });
         setShowDialog(true);
     };
 
-    const filteredInventory = inventory.filter(item =>
-        item.product?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.warehouse?.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredInventory = inventory.filter(item => {
+        const productName = item.product?.name || '';
+        return productName.toLowerCase().includes(searchQuery.toLowerCase());
+    });
 
     const getLowStockBadge = (item: Inventory) => {
         if (item.quantity === 0) {
