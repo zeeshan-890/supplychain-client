@@ -69,7 +69,7 @@ export default function CustomerVerifyQRPage() {
             } else {
                 // Fetch full order details for display
                 const fullOrder = await axios.get(`/order/${response.data.order.id}`);
-                
+
                 setVerificationResult({
                     success: true,
                     message: response.data.message || "✅ Order verified successfully!",
