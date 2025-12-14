@@ -47,106 +47,106 @@ export default function OutgoingLegsPage() {
             setLoading(false);
         }
     };
-                <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        padding: 20px;
-                        text-align: center;
+    <style>
+        body {
+            font - family: Arial, sans-serif;
+        padding: 20px;
+        text-align: center;
                     }
-                    .container {
-                        max-width: 400px;
-                        margin: 0 auto;
-                        border: 2px dashed #ccc;
-                        padding: 20px;
-                        border-radius: 10px;
+        .container {
+            max - width: 400px;
+        margin: 0 auto;
+        border: 2px dashed #ccc;
+        padding: 20px;
+        border-radius: 10px;
                     }
-                    .title {
-                        font-size: 18px;
-                        font-weight: bold;
-                        margin-bottom: 10px;
+        .title {
+            font - size: 18px;
+        font-weight: bold;
+        margin-bottom: 10px;
                     }
-                    .qr-code {
-                        margin: 20px 0;
+        .qr-code {
+            margin: 20px 0;
                     }
-                    .qr-code img {
-                        width: 200px;
-                        height: 200px;
+        .qr-code img {
+            width: 200px;
+        height: 200px;
                     }
-                    .info {
-                        text-align: left;
-                        font-size: 12px;
-                        margin-top: 15px;
-                        border-top: 1px solid #eee;
-                        padding-top: 15px;
+        .info {
+            text - align: left;
+        font-size: 12px;
+        margin-top: 15px;
+        border-top: 1px solid #eee;
+        padding-top: 15px;
                     }
-                    .info p {
-                        margin: 5px 0;
+        .info p {
+            margin: 5px 0;
                     }
-                    .info strong {
-                        display: inline-block;
-                        width: 100px;
+        .info strong {
+            display: inline-block;
+        width: 100px;
                     }
-                    .link-section {
-                        margin-top: 15px;
-                        padding-top: 15px;
-                        border-top: 1px solid #eee;
-                        text-align: left;
+        .link-section {
+            margin - top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+        text-align: left;
                     }
-                    .link-section strong {
-                        display: block;
-                        margin-bottom: 5px;
-                        font-size: 11px;
+        .link-section strong {
+            display: block;
+        margin-bottom: 5px;
+        font-size: 11px;
                     }
-                    .link-section code {
-                        display: block;
-                        background: #f5f5f5;
-                        padding: 8px;
-                        font-size: 9px;
-                        word-break: break-all;
-                        border: 1px solid #ddd;
+        .link-section code {
+            display: block;
+        background: #f5f5f5;
+        padding: 8px;
+        font-size: 9px;
+        word-break: break-all;
+        border: 1px solid #ddd;
                     }
-                    .footer {
-                        margin-top: 15px;
-                        font-size: 10px;
-                        color: #666;
+        .footer {
+            margin - top: 15px;
+        font-size: 10px;
+        color: #666;
                     }
-                    @media print {
-                        body { padding: 0; }
-                        .container { border: 2px dashed #000; }
+        @media print {
+            body {padding: 0; }
+        .container {border: 2px dashed #000; }
                     }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="title">📦 Supply Chain Verification</div>
-                    <div class="qr-code">
-                        <img src="${qrCodeDataUrl}" alt="QR Code" />
-                    </div>
-                    <div class="info">
-                        <p><strong>Order ID:</strong> #${selectedLeg?.order?.id}</p>
-                        <p><strong>Product:</strong> ${selectedLeg?.order?.product?.name}</p>
-                        <p><strong>Quantity:</strong> ${selectedLeg?.order?.quantity}</p>
-                        <p><strong>Customer:</strong> ${selectedLeg?.order?.customer?.name}</p>
-                        <p><strong>Transporter:</strong> ${selectedLeg?.transporter?.name}</p>
-                    </div>
-                    <div class="link-section">
-                        <strong>Verification Link:</strong>
-                        <code>${verificationLink}</code>
-                    </div>
-                    <div class="footer">
-                        Scan this QR code or visit the link above to verify product authenticity
-                    </div>
+    </style>
+            </head >
+        <body>
+            <div class="container">
+                <div class="title">📦 Supply Chain Verification</div>
+                <div class="qr-code">
+                    <img src="${qrCodeDataUrl}" alt="QR Code" />
                 </div>
-                <script>
-                    window.onload = function() {
-                        window.print();
-                        window.onafterprint = function() {
-                            window.close();
+                <div class="info">
+                    <p><strong>Order ID:</strong> #${selectedLeg?.order?.id}</p>
+                    <p><strong>Product:</strong> ${selectedLeg?.order?.product?.name}</p>
+                    <p><strong>Quantity:</strong> ${selectedLeg?.order?.quantity}</p>
+                    <p><strong>Customer:</strong> ${selectedLeg?.order?.customer?.name}</p>
+                    <p><strong>Transporter:</strong> ${selectedLeg?.transporter?.name}</p>
+                </div>
+                <div class="link-section">
+                    <strong>Verification Link:</strong>
+                    <code>${verificationLink}</code>
+                </div>
+                <div class="footer">
+                    Scan this QR code or visit the link above to verify product authenticity
+                </div>
+            </div>
+            <script>
+                window.onload = function() {
+                    window.print();
+                window.onafterprint = function() {
+                    window.close();
                         }
                     }
-                </script>
-            </body>
-            </html>
+            </script>
+        </body>
+            </html >
         `);
         printWindow.document.close();
     };

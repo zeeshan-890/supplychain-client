@@ -161,16 +161,16 @@ export default function SupplierOrdersManagePage() {
         if (!confirm('Mark this order as shipped?')) return;
 
         // Find the LATEST leg that is ACCEPTED and needs shipping
-        const latestLeg = order.legs?.reduce((latest: any, leg: any) => 
-            !latest || leg.legNumber > latest.legNumber ? leg : latest, 
+        const latestLeg = order.legs?.reduce((latest: any, leg: any) =>
+            !latest || leg.legNumber > latest.legNumber ? leg : latest,
             null
         );
-        
+
         if (!latestLeg || latestLeg.status !== 'ACCEPTED' || latestLeg.fromType !== 'SUPPLIER') {
             showToast("No accepted leg found to ship", "error");
             return;
         }
-        
+
         const legToShip = latestLeg;
 
         try {
@@ -397,39 +397,39 @@ export default function SupplierOrdersManagePage() {
                                                         )}
                                                         {order.status === OrderStatus.APPROVED && (() => {
                                                             // Only show Ship button if the LATEST leg is ACCEPTED and from SUPPLIER
-                                                            const latestLeg = order.legs?.reduce((latest: any, leg: any) => 
-                                                                !latest || leg.legNumber > latest.legNumber ? leg : latest, 
+                                                            const latestLeg = order.legs?.reduce((latest: any, leg: any) =>
+                                                                !latest || leg.legNumber > latest.legNumber ? leg : latest,
                                                                 null
                                                             );
                                                             return latestLeg?.status === 'ACCEPTED' && latestLeg?.fromType === 'SUPPLIER';
                                                         })() && (
-                                                            <Button
-                                                                variant="default"
-                                                                size="sm"
-                                                                onClick={() => handleShip(order)}
-                                                                disabled={isSubmitting}
-                                                            >
-                                                                <Truck className="mr-1 h-4 w-4" />
-                                                                Ship
-                                                            </Button>
-                                                        )}
+                                                                <Button
+                                                                    variant="default"
+                                                                    size="sm"
+                                                                    onClick={() => handleShip(order)}
+                                                                    disabled={isSubmitting}
+                                                                >
+                                                                    <Truck className="mr-1 h-4 w-4" />
+                                                                    Ship
+                                                                </Button>
+                                                            )}
                                                         {/* Show QR button after order is shipped (IN_TRANSIT) */}
                                                         {order.status === OrderStatus.APPROVED && (() => {
-                                                            const latestLeg = order.legs?.reduce((latest: any, leg: any) => 
-                                                                !latest || leg.legNumber > latest.legNumber ? leg : latest, 
+                                                            const latestLeg = order.legs?.reduce((latest: any, leg: any) =>
+                                                                !latest || leg.legNumber > latest.legNumber ? leg : latest,
                                                                 null
                                                             );
                                                             return latestLeg?.status === 'IN_TRANSIT' && latestLeg?.fromType === 'SUPPLIER' && order.qrToken;
                                                         })() && (
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                onClick={() => handleShowQR(order)}
-                                                            >
-                                                                <Printer className="mr-1 h-4 w-4" />
-                                                                QR Code
-                                                            </Button>
-                                                        )}
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    onClick={() => handleShowQR(order)}
+                                                                >
+                                                                    <Printer className="mr-1 h-4 w-4" />
+                                                                    QR Code
+                                                                </Button>
+                                                            )}
                                                         <Button variant="ghost" size="sm">
                                                             <Eye className="h-4 w-4" />
                                                         </Button>
