@@ -103,12 +103,22 @@ export default function CustomerVerifyQRPage() {
     const handleScanSuccess = (decodedText: string) => {
         console.log("Scanned QR code:", decodedText);
         const trimmedToken = decodedText.trim();
-        setQrToken(trimmedToken);
-        setShowScanner(false);
-        stopScanner();
-        showToast("QR code scanned successfully!", "success");
-        // Automatically verify after scanning
-        handleVerifyWithToken(trimmedToken);
+        
+        // Check if it's a URL (starts with http:// or https://)
+        if (trimmedToken.startsWith('http://') || trimmedToken.startsWith('https://')) {
+            // It's a URL, redirect to it
+            stopScanner();
+            setShowScanner(false);
+            showToast("Redirecting to verification page...", "success");
+            window.location.href = trimmedToken;
+        } else {
+            // It's just a token, verify directly
+            setQrToken(trimmedToken);
+            setShowScanner(false);
+            stopScanner();
+            showToast("QR code scanned successfully!", "success");
+            handleVerifyWithToken(trimmedToken);
+        }
     };
 
     const toggleScanner = async () => {

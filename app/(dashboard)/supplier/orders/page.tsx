@@ -103,10 +103,12 @@ export default function SupplierOrdersPage() {
 
         // Check if order already has QR data
         if (order.qrToken) {
-            // QR code now contains just the token - scanner will extract and verify it
+            // Generate full URL for QR scanning
+            const baseUrl = typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
+            const verificationUrl = `${baseUrl}/verify-order?token=${order.qrToken}`;
             setQrData({
                 qrToken: order.qrToken,
-                verificationUrl: order.qrToken // Just the token for scanning
+                verificationUrl: verificationUrl // Full URL for scanning
             });
             setShowQRDialog(true);
         } else {

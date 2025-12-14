@@ -191,9 +191,12 @@ export default function SupplierOrdersManagePage() {
 
         // Generate QR code from the order's qrToken
         if (order.qrToken) {
-            // QR code now contains just the token - scanner will extract and verify it
+            // Generate full URL for QR scanning
+            const frontendUrl = window.location.origin;
+            const verificationUrl = `${frontendUrl}/verify-order?token=${order.qrToken}`;
+
             try {
-                const dataUrl = await QRCode.toDataURL(order.qrToken, {
+                const dataUrl = await QRCode.toDataURL(verificationUrl, {
                     width: 300,
                     margin: 2,
                     color: {
