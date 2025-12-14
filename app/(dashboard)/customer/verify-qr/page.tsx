@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { QrCode, CheckCircle, XCircle, AlertCircle, Package, Building2, Calendar, User, MapPin, Camera, X } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -12,10 +12,7 @@ import { useToast } from "@/context/ToastContext";
 import { useAuth } from "@/context/AuthContext";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import axios from "@/lib/axios";
-import dynamic from "next/dynamic";
-
-// Dynamically import QR scanner to avoid SSR issues
-const QrScanner = dynamic(() => import("react-qr-scanner"), { ssr: false });
+import { Html5Qrcode } from "html5-qrcode";
 
 interface VerificationResult {
     success: boolean;
@@ -52,22 +49,75 @@ export default function CustomerVerifyQRPage() {
     const [verificationResult, setVerificationResult] = useState<VerificationResult | null>(null);
     const [showScanner, setShowScanner] = useState(false);
     const [scanError, setScanError] = useState<string | null>(null);
+    const scannerRef = useRef<Html5Qrcode | null>(null);
+    const scannerInitialized = useRef(false);
 
-    const handleScan = (data: any) => {
-        if (data) {
-            // Extract token from scanned data
-            const scannedText = data.text || data;
-            setQrToken(scannedText);
-            setShowScanner(false);
-            showToast("QR code scanned successfully!", "success");
-            // Automatically verify after scanning
-            handleVerifyWithToken(scannedText);
+    useEffect(() => {
+        return () => {
+            // Cleanup scanner on unmount
+            if (scannerRef.current && scannerInitialized.current) {
+                scannerRef.current.stop().catch(console.error);
+            }
+        };
+    }, []);
+
+    const startScanner = async () => {
+        try {
+            setScanError(null);
+            const scanner = new Html5Qrcode("qr-reader");
+            scannerRef.current = scanner;
+            
+            await scanner.start(
+                { facingMode: "environment" },
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 }
+                },
+                (decodedText) => {
+                    // Success callback - QR code scanned
+                    handleScanSuccess(decodedText);
+                },
+                (errorMessage) => {
+                    // Error callback - can be ignored for scanning issues
+                    // Only log significant errors
+                }
+            );
+            scannerInitialized.current = true;
+        } catch (err: any) {
+            console.error("Scanner error:", err);
+            setScanError("Unable to access camera. Please ensure camera permissions are granted.");
         }
     };
 
-    const handleScanError = (error: any) => {
-        console.error("Scanner error:", error);
-        setScanError("Unable to access camera. Please ensure camera permissions are granted.");
+    const stopScanner = async () => {
+        if (scannerRef.current && scannerInitialized.current) {
+            try {
+                await scannerRef.current.stop();
+                scannerInitialized.current = false;
+            } catch (err) {
+                console.error("Error stopping scanner:", err);
+            }
+        }
+    };
+
+    const handleScanSuccess = (decodedText: string) => {
+        setQrToken(decodedText);
+        setShowScanner(false);
+        stopScanner();
+        showToast("QR code scanned successfully!", "success");
+        // Automatically verify after scanning
+        handleVerifyWithToken(decodedText);
+    };
+
+    const toggleScanner = async () => {
+        if (showScanner) {
+            await stopScanner();
+            setShowScanner(false);
+        } else {
+            setShowScanner(true);
+            // Small delay to ensure div is rendered
+            setTimeout(() => startScanner(), 100);
+        }
     };
 
     const handleVerifyWithToken = async (token: string) => {
@@ -148,7 +198,7 @@ export default function CustomerVerifyQRPage() {
                         {/* Scanner Toggle */}
                         <div className="flex gap-3">
                             <Button
-                                onClick={() => setShowScanner(!showScanner)}
+                                onClick={toggleScanner}
                                 variant={showScanner ? "destructive" : "default"}
                                 className="flex-1"
                             >
@@ -169,17 +219,7 @@ export default function CustomerVerifyQRPage() {
                         {/* QR Scanner */}
                         {showScanner && (
                             <div className="space-y-3">
-                                <div className="relative rounded-lg overflow-hidden border-2 border-blue-500">
-                                    <QrScanner
-                                        delay={300}
-                                        onError={handleScanError}
-                                        onScan={handleScan}
-                                        style={{ width: "100%" }}
-                                        constraints={{
-                                            video: { facingMode: "environment" }
-                                        }}
-                                    />
-                                </div>
+                                <div id="qr-reader" className="rounded-lg overflow-hidden border-2 border-blue-500"></div>
                                 {scanError && (
                                     <div className="flex items-start gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                                         <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
