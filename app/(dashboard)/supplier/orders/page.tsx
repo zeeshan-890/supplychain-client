@@ -109,7 +109,7 @@ export default function SupplierOrdersPage() {
                 transporterId: parseInt(approveForm.transporterId),
                 privateKey: approveForm.privateKey
             });
-            
+
             // Store QR data from response
             if (response.qrToken && response.verificationUrl) {
                 setQrData({
@@ -117,14 +117,14 @@ export default function SupplierOrdersPage() {
                     verificationUrl: response.verificationUrl
                 });
             }
-            
+
             showToast("Order approved successfully!", "success");
             setShowApproveDialog(false);
             setApproveForm({ distributorId: '', transporterId: '', privateKey: '' });
-            
+
             // Show QR dialog
             setShowQRDialog(true);
-            
+
             refetch();
         } catch (error: any) {
             console.log('Approval error caught:', error);
@@ -169,7 +169,7 @@ export default function SupplierOrdersPage() {
 
     const generateQRCode = async () => {
         if (!qrData) return null;
-        
+
         try {
             const dataUrl = await QRCode.toDataURL(qrData.verificationUrl, {
                 width: 300,
@@ -642,14 +642,14 @@ export default function SupplierOrdersPage() {
                                 </div>
 
                                 <div className="flex gap-3">
-                                    <Button 
+                                    <Button
                                         onClick={handleDownloadQR}
                                         className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
                                     >
                                         <Download className="mr-2 h-4 w-4" />
                                         Download QR
                                     </Button>
-                                    <Button 
+                                    <Button
                                         onClick={handlePrintQR}
                                         className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                                     >
@@ -658,8 +658,8 @@ export default function SupplierOrdersPage() {
                                     </Button>
                                 </div>
 
-                                <Button 
-                                    variant="outline" 
+                                <Button
+                                    variant="outline"
                                     onClick={() => setShowQRDialog(false)}
                                     className="w-full bg-gray-900 text-white border-gray-700 hover:bg-gray-800"
                                 >
