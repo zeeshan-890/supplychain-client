@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { QrCode, CheckCircle, XCircle, AlertCircle, Package, Building2, Calendar, User, MapPin } from "lucide-react";
+import { QrCode, CheckCircle, XCircle, AlertCircle, Package, Building2, Calendar, User, MapPin, Camera, X } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -12,6 +12,10 @@ import { useToast } from "@/context/ToastContext";
 import { useAuth } from "@/context/AuthContext";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import axios from "@/lib/axios";
+import dynamic from "next/dynamic";
+
+// Dynamically import QR scanner to avoid SSR issues
+const QrScanner = dynamic(() => import("react-qr-scanner"), { ssr: false });
 
 interface VerificationResult {
     success: boolean;
@@ -46,9 +50,28 @@ export default function CustomerVerifyQRPage() {
     const [qrToken, setQrToken] = useState("");
     const [isVerifying, setIsVerifying] = useState(false);
     const [verificationResult, setVerificationResult] = useState<VerificationResult | null>(null);
+    const [showScanner, setShowScanner] = useState(false);
+    const [scanError, setScanError] = useState<string | null>(null);
 
-    const handleVerify = async () => {
-        if (!qrToken.trim()) {
+    const handleScan = (data: any) => {
+        if (data) {
+            // Extract token from scanned data
+            const scannedText = data.text || data;
+            setQrToken(scannedText);
+            setShowScanner(false);
+            showToast("QR code scanned successfully!", "success");
+            // Automatically verify after scanning
+            handleVerifyWithToken(scannedText);
+        }
+    };
+
+    const handleScanError = (error: any) => {
+        console.error("Scanner error:", error);
+        setScanError("Unable to access camera. Please ensure camera permissions are granted.");
+    };
+
+    const handleVerifyWithToken = async (token: string) => {
+        if (!token.trim()) {
             showToast("Please enter a QR code token", "error");
             return;
         }
@@ -57,7 +80,7 @@ export default function CustomerVerifyQRPage() {
             setIsVerifying(true);
             setVerificationResult(null);
 
-            const response = await axios.get(`/verification?token=${qrToken}`);
+            const response = await axios.get(`/verification?token=${token}`);
 
             // Backend returns { valid: true/false, message, order: {...}, error }
             if (!response.data.valid) {
@@ -89,6 +112,10 @@ export default function CustomerVerifyQRPage() {
         }
     };
 
+    const handleVerify = () => {
+        handleVerifyWithToken(qrToken);
+    };
+
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === "Enter") {
             handleVerify();
@@ -111,35 +138,86 @@ export default function CustomerVerifyQRPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <QrCode className="w-5 h-5" />
-                            Enter QR Code Token
+                            Verify QR Code
                         </CardTitle>
                         <CardDescription>
-                            Enter the QR code token from your order to verify its authenticity
+                            Scan the QR code with your camera or enter the token manually
                         </CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="space-y-4">
+                        {/* Scanner Toggle */}
                         <div className="flex gap-3">
-                            <Input
-                                type="text"
-                                placeholder="Enter QR code token (e.g., abc123xyz...)"
-                                value={qrToken}
-                                onChange={(e) => setQrToken(e.target.value)}
-                                onKeyPress={handleKeyPress}
+                            <Button
+                                onClick={() => setShowScanner(!showScanner)}
+                                variant={showScanner ? "destructive" : "default"}
                                 className="flex-1"
-                            />
-                            <Button onClick={handleVerify} disabled={isVerifying || !qrToken.trim()}>
-                                {isVerifying ? (
+                            >
+                                {showScanner ? (
                                     <>
-                                        <Spinner size="sm" className="mr-2" />
-                                        Verifying...
+                                        <X className="mr-2 h-4 w-4" />
+                                        Close Scanner
                                     </>
                                 ) : (
                                     <>
-                                        <QrCode className="mr-2 h-4 w-4" />
-                                        Verify
+                                        <Camera className="mr-2 h-4 w-4" />
+                                        Scan QR Code
                                     </>
                                 )}
                             </Button>
+                        </div>
+
+                        {/* QR Scanner */}
+                        {showScanner && (
+                            <div className="space-y-3">
+                                <div className="relative rounded-lg overflow-hidden border-2 border-blue-500">
+                                    <QrScanner
+                                        delay={300}
+                                        onError={handleScanError}
+                                        onScan={handleScan}
+                                        style={{ width: "100%" }}
+                                        constraints={{
+                                            video: { facingMode: "environment" }
+                                        }}
+                                    />
+                                </div>
+                                {scanError && (
+                                    <div className="flex items-start gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                        <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
+                                        <p className="text-sm text-yellow-800">{scanError}</p>
+                                    </div>
+                                )}
+                                <p className="text-sm text-muted-foreground text-center">
+                                    Position the QR code within the frame to scan
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Manual Input */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Or enter token manually:</label>
+                            <div className="flex gap-3">
+                                <Input
+                                    type="text"
+                                    placeholder="Enter QR code token (e.g., abc123xyz...)"
+                                    value={qrToken}
+                                    onChange={(e) => setQrToken(e.target.value)}
+                                    onKeyPress={handleKeyPress}
+                                    className="flex-1"
+                                />
+                                <Button onClick={handleVerify} disabled={isVerifying || !qrToken.trim()}>
+                                    {isVerifying ? (
+                                        <>
+                                            <Spinner size="sm" className="mr-2" />
+                                            Verifying...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <QrCode className="mr-2 h-4 w-4" />
+                                            Verify
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
