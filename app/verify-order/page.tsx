@@ -77,7 +77,7 @@ export default function VerifyOrderPage() {
             setError(null);
 
             // Call verification endpoint
-            const response = await axios.get(`/verification?token=${encodeURIComponent(token)}`);
+            const response = await axios.get(`/api/verify?token=${encodeURIComponent(token)}`);
 
             if (!response.data.valid) {
                 setError(response.data.message || "Verification failed");
@@ -86,7 +86,7 @@ export default function VerifyOrderPage() {
             }
 
             // Fetch full order details
-            const fullOrder = await axios.get(`/order/${response.data.order.id}`);
+            const fullOrder = await axios.get(`/api/order/${response.data.order.id}`);
 
             // Check if order belongs to logged-in customer
             if (fullOrder.data.customerId !== user.id) {
