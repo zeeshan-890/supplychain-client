@@ -15,6 +15,7 @@ export const ROUTES = {
         ORDERS: '/customer/orders',
         ORDER_DETAILS: (id: number) => `/customer/orders/${id}`,
         VERIFY: '/customer/verify',
+        VERIFY_QR: '/customer/verify-qr',
         ROLE_REQUEST: '/customer/role-request',
     },
 
