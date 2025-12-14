@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, Check, X, RefreshCw, Package, Truck } from "lucide-react";
+import QRCode from "qrcode";
+import { Eye, Check, X, RefreshCw, Package, Truck, Printer } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
 import { Badge } from "@/components/ui/Badge";

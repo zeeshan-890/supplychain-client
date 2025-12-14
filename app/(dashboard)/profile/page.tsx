@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Avatar, AvatarFallback } from "@/components/ui/Avatar";
 import Container from "@/components/layout/Container";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
 
 export default function ProfilePage() {
     const { user, setUser } = useAuth();

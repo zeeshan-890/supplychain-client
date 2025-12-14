@@ -3,25 +3,55 @@
 import { useState, useEffect } from 'react';
 import { X, Cookie } from 'lucide-react';
 import { Button } from './ui/Button';
+import { setCookie, getCookie } from '@/lib/cookies';
 
 export default function CookieConsent() {
     const [showBanner, setShowBanner] = useState(false);
 
     useEffect(() => {
         // Check if user has already accepted cookies
-        const consent = localStorage.getItem('cookieConsent');
+        const consent = getCookie('cookieConsent');
+        
         if (!consent) {
-            setShowBanner(true);
+            // Small delay to ensure page is loaded
+            const timer = setTimeout(() => {
+                setShowBanner(true);
+            }, 500);
+            return () => clearTimeout(timer);
         }
     }, []);
 
     const acceptCookies = () => {
-        localStorage.setItem('cookieConsent', 'accepted');
+        // Set cookie for 365 days
+        setCookie('cookieConsent', 'accepted', 365);
+        
+        // Also set in localStorage as backup
+        try {
+            localStorage.setItem('cookieConsent', 'accepted');
+        } catch (e) {
+            console.log('localStorage not available');
+        }
+        
+        console.log('Cookie consent accepted');
+        console.log('Cookie value:', getCookie('cookieConsent'));
+        
         setShowBanner(false);
     };
 
     const rejectCookies = () => {
-        localStorage.setItem('cookieConsent', 'rejected');
+        // Set cookie for 365 days
+        setCookie('cookieConsent', 'rejected', 365);
+        
+        // Also set in localStorage as backup
+        try {
+            localStorage.setItem('cookieConsent', 'rejected');
+        } catch (e) {
+            console.log('localStorage not available');
+        }
+        
+        console.log('Cookie consent rejected');
+        console.log('Cookie value:', getCookie('cookieConsent'));
+        
         setShowBanner(false);
     };
 
