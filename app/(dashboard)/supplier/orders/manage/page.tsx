@@ -24,6 +24,8 @@ export default function SupplierOrdersManagePage() {
     const [showApproveDialog, setShowApproveDialog] = useState(false);
     const [showRejectDialog, setShowRejectDialog] = useState(false);
     const [showReassignDialog, setShowReassignDialog] = useState(false);
+    const [showQRDialog, setShowQRDialog] = useState(false);
+    const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
     const [selectedOrder, setSelectedOrder] = useState<any>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [approveForm, setApproveForm] = useState({
@@ -158,13 +160,18 @@ export default function SupplierOrdersManagePage() {
     const handleShip = async (order: any) => {
         if (!confirm('Mark this order as shipped?')) return;
 
-        // Find the first leg that is ACCEPTED and needs shipping
-        const legToShip = order.legs?.find((leg: any) => leg.status === 'ACCEPTED' && leg.fromType === 'SUPPLIER');
-
-        if (!legToShip) {
+        // Find the LATEST leg that is ACCEPTED and needs shipping
+        const latestLeg = order.legs?.reduce((latest: any, leg: any) => 
+            !latest || leg.legNumber > latest.legNumber ? leg : latest, 
+            null
+        );
+        
+        if (!latestLeg || latestLeg.status !== 'ACCEPTED' || latestLeg.fromType !== 'SUPPLIER') {
             showToast("No accepted leg found to ship", "error");
             return;
         }
+        
+        const legToShip = latestLeg;
 
         try {
             setIsSubmitting(true);
@@ -176,6 +183,103 @@ export default function SupplierOrdersManagePage() {
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const handleShowQR = async (order: any) => {
+        setSelectedOrder(order);
+
+        // Generate QR code from the order's qrToken
+        if (order.qrToken) {
+            const frontendUrl = window.location.origin;
+            const verificationUrl = `${frontendUrl}/verify?token=${order.qrToken}`;
+
+            try {
+                const dataUrl = await QRCode.toDataURL(verificationUrl, {
+                    width: 300,
+                    margin: 2,
+                    color: {
+                        dark: '#000000',
+                        light: '#ffffff'
+                    }
+                });
+                setQrCodeDataUrl(dataUrl);
+                setShowQRDialog(true);
+            } catch (err) {
+                console.error('Error generating QR code:', err);
+                showToast('Failed to generate QR code', 'error');
+            }
+        } else {
+            showToast('QR code not available for this order', 'error');
+        }
+    };
+
+    const handlePrintQR = () => {
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            showToast('Please allow popups to print', 'error');
+            return;
+        }
+
+        const verificationLink = `${window.location.origin}/verify?token=${selectedOrder?.qrToken}`;
+
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>QR Code - Order #${selectedOrder?.id}</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        min-height: 100vh;
+                        margin: 0;
+                        padding: 20px;
+                    }
+                    .container {
+                        text-align: center;
+                        max-width: 500px;
+                    }
+                    h1 { margin-bottom: 10px; font-size: 24px; }
+                    .order-info { margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 8px; }
+                    .qr-code { margin: 20px 0; }
+                    .qr-code img { max-width: 300px; }
+                    .instructions { margin-top: 20px; font-size: 14px; color: #666; text-align: left; }
+                    @media print {
+                        body { padding: 0; }
+                        .no-print { display: none; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>Supply Chain Verification</h1>
+                    <div class="order-info">
+                        <p><strong>Order ID:</strong> #${selectedOrder?.id}</p>
+                        <p><strong>Product:</strong> ${selectedOrder?.product?.name}</p>
+                        <p><strong>Customer:</strong> ${selectedOrder?.customer?.name}</p>
+                        <p><strong>Quantity:</strong> ${selectedOrder?.quantity}</p>
+                    </div>
+                    <div class="qr-code">
+                        <img src="${qrCodeDataUrl}" alt="QR Code" />
+                    </div>
+                    <div class="instructions">
+                        <p><strong>Scan Instructions:</strong></p>
+                        <ul>
+                            <li>Scan this QR code to verify product authenticity</li>
+                            <li>Or visit: ${verificationLink}</li>
+                        </ul>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `);
+
+        printWindow.document.close();
+        setTimeout(() => {
+            printWindow.print();
+        }, 250);
     };
 
     if (isLoading) {
@@ -291,7 +395,14 @@ export default function SupplierOrdersManagePage() {
                                                                 Reassign
                                                             </Button>
                                                         )}
-                                                        {order.status === OrderStatus.APPROVED && order.legs?.some((leg: any) => leg.status === 'ACCEPTED' && leg.fromType === 'SUPPLIER') && (
+                                                        {order.status === OrderStatus.APPROVED && (() => {
+                                                            // Only show Ship button if the LATEST leg is ACCEPTED and from SUPPLIER
+                                                            const latestLeg = order.legs?.reduce((latest: any, leg: any) => 
+                                                                !latest || leg.legNumber > latest.legNumber ? leg : latest, 
+                                                                null
+                                                            );
+                                                            return latestLeg?.status === 'ACCEPTED' && latestLeg?.fromType === 'SUPPLIER';
+                                                        })() && (
                                                             <Button
                                                                 variant="default"
                                                                 size="sm"
@@ -300,6 +411,23 @@ export default function SupplierOrdersManagePage() {
                                                             >
                                                                 <Truck className="mr-1 h-4 w-4" />
                                                                 Ship
+                                                            </Button>
+                                                        )}
+                                                        {/* Show QR button after order is shipped (IN_TRANSIT) */}
+                                                        {order.status === OrderStatus.APPROVED && (() => {
+                                                            const latestLeg = order.legs?.reduce((latest: any, leg: any) => 
+                                                                !latest || leg.legNumber > latest.legNumber ? leg : latest, 
+                                                                null
+                                                            );
+                                                            return latestLeg?.status === 'IN_TRANSIT' && latestLeg?.fromType === 'SUPPLIER' && order.qrToken;
+                                                        })() && (
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => handleShowQR(order)}
+                                                            >
+                                                                <Printer className="mr-1 h-4 w-4" />
+                                                                QR Code
                                                             </Button>
                                                         )}
                                                         <Button variant="ghost" size="sm">
@@ -489,6 +617,94 @@ export default function SupplierOrdersManagePage() {
                                 </Button>
                             </div>
                         </form>
+                    </div>
+                </Dialog>
+
+                {/* QR Code Dialog */}
+                <Dialog open={showQRDialog} onClose={() => setShowQRDialog(false)}>
+                    <div className="p-6">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Package QR Code</h2>
+                        {selectedOrder && (
+                            <div className="space-y-4">
+                                {/* Order Info */}
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                    <h3 className="font-semibold text-lg mb-3 text-gray-900">Order #{selectedOrder.id}</h3>
+                                    <div className="grid grid-cols-2 gap-3 text-sm">
+                                        <div>
+                                            <p className="text-gray-600">Product:</p>
+                                            <p className="font-semibold text-gray-900">{selectedOrder.product?.name}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-600">Quantity:</p>
+                                            <p className="font-semibold text-gray-900">{selectedOrder.quantity}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-600">Customer:</p>
+                                            <p className="font-semibold text-gray-900">{selectedOrder.customer?.name}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-600">Total Amount:</p>
+                                            <p className="font-semibold text-gray-900">{formatCurrency(selectedOrder.totalAmount)}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* QR Code */}
+                                <div className="flex flex-col items-center py-4">
+                                    {qrCodeDataUrl ? (
+                                        <>
+                                            <img
+                                                src={qrCodeDataUrl}
+                                                alt="QR Code"
+                                                className="w-64 h-64 border-4 border-gray-200 rounded-lg"
+                                            />
+                                            <p className="text-sm text-gray-600 mt-3 text-center">
+                                                Distributor/Customer scans this code to verify authenticity
+                                            </p>
+
+                                            {/* Verification Link */}
+                                            <div className="w-full mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                                <label className="text-xs text-gray-500 font-medium block mb-2">Verification Link:</label>
+                                                <div className="flex items-center gap-2">
+                                                    <input
+                                                        type="text"
+                                                        readOnly
+                                                        value={`${window.location.origin}/verify?token=${selectedOrder.qrToken}`}
+                                                        className="flex-1 px-3 py-2 text-sm bg-white border border-gray-300 rounded text-gray-700 font-mono"
+                                                        onClick={(e) => (e.target as HTMLInputElement).select()}
+                                                    />
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        onClick={() => {
+                                                            navigator.clipboard.writeText(`${window.location.origin}/verify?token=${selectedOrder.qrToken}`);
+                                                            showToast('Link copied to clipboard!', 'success');
+                                                        }}
+                                                    >
+                                                        Copy
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="w-64 h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+                                            <p className="text-gray-500">No QR code available</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Actions */}
+                                <div className="flex gap-3 pt-4 border-t">
+                                    <Button onClick={handlePrintQR} className="flex-1">
+                                        <Printer className="w-4 h-4 mr-2" />
+                                        Print QR Code
+                                    </Button>
+                                    <Button variant="outline" onClick={() => setShowQRDialog(false)}>
+                                        Close
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </Dialog>
             </div>

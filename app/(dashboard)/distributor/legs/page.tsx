@@ -1,29 +1,23 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { Package, Printer, X, Truck, User, MapPin, Send } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Package, Truck, User, MapPin, Send } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { Spinner } from '@/components/ui/Spinner';
-import { Dialog } from '@/components/ui/Dialog';
 import Container from '@/components/layout/Container';
 import { useToast } from '@/context/ToastContext';
 import { distributorService } from '@/services/distributorService';
 import { OrderLeg } from '@/types';
 import { formatDate, formatCurrency } from '@/lib/utils';
-import QRCode from 'qrcode';
 
 export default function OutgoingLegsPage() {
     const { showToast } = useToast();
     const [legs, setLegs] = useState<OrderLeg[]>([]);
     const [loading, setLoading] = useState(true);
-    const [showQRDialog, setShowQRDialog] = useState(false);
-    const [selectedLeg, setSelectedLeg] = useState<any>(null);
-    const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
     const [shippingLegId, setShippingLegId] = useState<number | null>(null);
-    const printRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         fetchLegs();
@@ -53,51 +47,6 @@ export default function OutgoingLegsPage() {
             setLoading(false);
         }
     };
-
-    const handleShowQR = async (leg: any) => {
-        setSelectedLeg(leg);
-
-        // Generate QR code from the order's qrToken - link to frontend verification page
-        if (leg.order?.qrToken) {
-            const frontendUrl = window.location.origin;
-            const verificationUrl = `${frontendUrl}/verify?token=${leg.order.qrToken}`;
-
-            try {
-                const dataUrl = await QRCode.toDataURL(verificationUrl, {
-                    width: 300,
-                    margin: 2,
-                    color: {
-                        dark: '#000000',
-                        light: '#ffffff'
-                    }
-                });
-                setQrCodeDataUrl(dataUrl);
-            } catch (err) {
-                console.error('Error generating QR code:', err);
-                showToast('Failed to generate QR code', 'error');
-            }
-        }
-
-        setShowQRDialog(true);
-    };
-
-    const handlePrint = () => {
-        const printContent = printRef.current;
-        if (!printContent) return;
-
-        const verificationLink = `${window.location.origin}/verify?token=${selectedLeg?.order?.qrToken}`;
-
-        const printWindow = window.open('', '_blank');
-        if (!printWindow) {
-            showToast('Please allow popups to print', 'error');
-            return;
-        }
-
-        printWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>QR Code - Order #${selectedLeg?.order?.id}</title>
                 <style>
                     body {
                         font-family: Arial, sans-serif;
@@ -371,17 +320,6 @@ export default function OutgoingLegsPage() {
                                                             )}
                                                         </Button>
                                                     )}
-                                                    {/* QR button for customer deliveries after shipping */}
-                                                    {leg.toType === 'CUSTOMER' && leg.order?.qrToken && (leg.status === 'IN_TRANSIT' || leg.status === 'DELIVERED') && (
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={() => handleShowQR(leg)}
-                                                        >
-                                                            <Printer className="w-4 h-4 mr-1" />
-                                                            QR
-                                                        </Button>
-                                                    )}
                                                 </div>
                                             </TableCell>
                                         </TableRow>
@@ -391,108 +329,6 @@ export default function OutgoingLegsPage() {
                         )}
                     </CardContent>
                 </Card>
-
-                {/* QR Code Dialog */}
-                <Dialog open={showQRDialog} onClose={() => setShowQRDialog(false)}>
-                    <div className="p-4 max-h-[90vh] overflow-y-auto" ref={printRef}>
-                        <div className="flex justify-between items-center mb-3">
-                            <h2 className="text-xl font-bold">Package QR Code</h2>
-                            <Button variant="ghost" size="sm" onClick={() => setShowQRDialog(false)}>
-                                <X className="w-4 h-4" />
-                            </Button>
-                        </div>
-
-                        {selectedLeg && (
-                            <div className="space-y-3">
-                                {/* Order Info */}
-                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                                    <h3 className="font-semibold text-base mb-2 text-gray-900">Order #{selectedLeg.order?.id}</h3>
-                                    <div className="grid grid-cols-2 gap-2 text-xs">
-                                        <div className="flex flex-col">
-                                            <span className="text-gray-600">Product:</span>
-                                            <span className="font-semibold text-gray-900">{selectedLeg.order?.product?.name}</span>
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-gray-600">Quantity:</span>
-                                            <span className="font-semibold text-gray-900">{selectedLeg.order?.quantity}</span>
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-gray-600">Customer:</span>
-                                            <span className="font-semibold text-gray-900">{selectedLeg.order?.customer?.name}</span>
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-gray-600">Amount:</span>
-                                            <span className="font-semibold text-gray-900">{formatCurrency(selectedLeg.order?.totalAmount || 0)}</span>
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-gray-600">Transporter:</span>
-                                            <span className="font-semibold text-gray-900">{selectedLeg.transporter?.name}</span>
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-gray-600">Phone:</span>
-                                            <span className="font-semibold text-gray-900">{selectedLeg.transporter?.phone}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* QR Code */}
-                                <div className="flex flex-col items-center py-2">
-                                    {qrCodeDataUrl ? (
-                                        <>
-                                            <img
-                                                src={qrCodeDataUrl}
-                                                alt="QR Code"
-                                                className="w-48 h-48 border-2 border-gray-200 rounded-lg"
-                                            />
-                                            <p className="text-xs text-gray-600 mt-2 text-center">
-                                                Customer scans this code to verify authenticity
-                                            </p>
-
-                                            {/* Verification Link */}
-                                            <div className="w-full mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                                <label className="text-xs text-gray-500 font-medium block mb-1">Verification Link:</label>
-                                                <div className="flex items-center gap-2">
-                                                    <input
-                                                        type="text"
-                                                        readOnly
-                                                        value={`${window.location.origin}/verify?token=${selectedLeg.order?.qrToken}`}
-                                                        className="flex-1 px-3 py-2 text-sm bg-white border border-gray-300 rounded text-gray-700 font-mono"
-                                                        onClick={(e) => (e.target as HTMLInputElement).select()}
-                                                    />
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={() => {
-                                                            navigator.clipboard.writeText(`${window.location.origin}/verify?token=${selectedLeg.order?.qrToken}`);
-                                                            showToast('Link copied to clipboard!', 'success');
-                                                        }}
-                                                    >
-                                                        Copy
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <div className="w-64 h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-                                            <p className="text-gray-500">No QR code available</p>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Actions */}
-                                <div className="flex gap-3 pt-4 border-t">
-                                    <Button onClick={handlePrint} className="flex-1">
-                                        <Printer className="w-4 h-4 mr-2" />
-                                        Print QR Code
-                                    </Button>
-                                    <Button variant="outline" onClick={() => setShowQRDialog(false)}>
-                                        Close
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </Dialog>
             </div>
         </Container>
     );

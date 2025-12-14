@@ -107,31 +107,63 @@ export default function SupplierOrderDetailsPage() {
             {/* Order Details */}
             <Card className="p-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">Order Information</h2>
-                <div className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-3">
-                        <div>
-                            <p className="text-sm text-gray-600">Product</p>
-                            <p className="font-medium text-gray-900">{order.product?.name || 'N/A'}</p>
+                <div className="space-y-6">
+                    {/* Product Information */}
+                    <div className="border-b pb-4">
+                        <h3 className="text-sm font-medium text-gray-600 mb-3">Product Details</h3>
+                        <div className="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <p className="text-sm text-gray-600">Name</p>
+                                <p className="font-medium text-gray-900">{order.product?.name || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Category</p>
+                                <p className="font-medium text-gray-900">{order.product?.category || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Unit Price</p>
+                                <p className="font-medium text-gray-900">Rs. {order.product?.price?.toFixed(2) || '0.00'}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Quantity Ordered</p>
+                                <p className="font-medium text-gray-900">{order.quantity}</p>
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-sm text-gray-600">Quantity</p>
-                            <p className="font-medium text-gray-900">{order.quantity}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-600">Customer</p>
-                            <p className="font-medium text-gray-900">{order.customer?.name || 'N/A'}</p>
-                        </div>
+                        {order.product?.description && (
+                            <div className="mt-3">
+                                <p className="text-sm text-gray-600">Description</p>
+                                <p className="text-sm text-gray-700 mt-1">{order.product.description}</p>
+                            </div>
+                        )}
                     </div>
-                    <div className="space-y-3">
-                        <div>
-                            <p className="text-sm text-gray-600">Delivery Address</p>
-                            <p className="font-medium text-gray-900">{order.deliveryAddress}</p>
+
+                    {/* Customer & Order Information */}
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <div className="space-y-3">
+                            <div>
+                                <p className="text-sm text-gray-600">Customer Name</p>
+                                <p className="font-medium text-gray-900">{order.customer?.name || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Customer Email</p>
+                                <p className="font-medium text-gray-900">{order.customer?.email || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Total Amount</p>
+                                <p className="font-medium text-gray-900 text-lg">Rs. {order.totalAmount?.toFixed(2) || '0.00'}</p>
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-sm text-gray-600">Order Date</p>
-                            <p className="font-medium text-gray-900">
-                                {new Date(order.createdAt).toLocaleDateString()}
-                            </p>
+                        <div className="space-y-3">
+                            <div>
+                                <p className="text-sm text-gray-600">Delivery Address</p>
+                                <p className="font-medium text-gray-900">{order.deliveryAddress}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Order Date</p>
+                                <p className="font-medium text-gray-900">
+                                    {new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
