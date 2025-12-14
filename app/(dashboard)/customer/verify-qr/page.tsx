@@ -103,7 +103,7 @@ export default function CustomerVerifyQRPage() {
     const handleScanSuccess = (decodedText: string) => {
         console.log("Scanned QR code:", decodedText);
         const trimmedToken = decodedText.trim();
-        
+
         // Check if it's a URL (starts with http:// or https://)
         if (trimmedToken.startsWith('http://') || trimmedToken.startsWith('https://')) {
             // It's a URL, redirect to it

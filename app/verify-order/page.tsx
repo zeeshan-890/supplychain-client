@@ -83,7 +83,7 @@ export default function VerifyOrderPage() {
 
             // Fetch full order details
             const fullOrder = await axios.get(`/order/${response.data.order.id}`);
-            
+
             // Check if order belongs to logged-in customer
             if (fullOrder.data.customerId !== user.id) {
                 setError("This order does not belong to you");
