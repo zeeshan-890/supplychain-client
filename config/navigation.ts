@@ -36,12 +36,6 @@ export const NAVIGATION: NavItem[] = [
         roles: [Role.CUSTOMER],
     },
     {
-        label: 'Verify QR',
-        href: ROUTES.CUSTOMER.VERIFY_QR,
-        icon: 'QrCode',
-        roles: [Role.CUSTOMER],
-    },
-    {
         label: 'Request Role Upgrade',
         href: ROUTES.CUSTOMER.ROLE_REQUEST,
         icon: 'UserPlus',

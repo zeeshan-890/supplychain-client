@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { Role } from "@/types/enums";
-import { Package, ShoppingCart, Users, TrendingUp, Box, Truck, ClipboardList, CheckCircle, UserPlus, QrCode } from "lucide-react";
+import { Package, ShoppingCart, Users, TrendingUp, Box, Truck, ClipboardList, CheckCircle, UserPlus } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import Container from "@/components/layout/Container";
@@ -143,7 +143,6 @@ export default function DashboardPage() {
                 return [
                     { label: "Browse Products", href: ROUTES.CUSTOMER.PRODUCTS, icon: Package },
                     { label: "My Orders", href: ROUTES.CUSTOMER.ORDERS, icon: ShoppingCart },
-                    { label: "Verify QR", href: ROUTES.CUSTOMER.VERIFY_QR, icon: QrCode },
                     { label: "Upgrade Role", href: ROUTES.CUSTOMER.ROLE_REQUEST, icon: UserPlus },
                 ];
             case Role.SUPPLIER:

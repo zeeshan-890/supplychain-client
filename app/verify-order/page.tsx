@@ -37,20 +37,19 @@ interface OrderDetails {
 export default function VerifyOrderPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { user, loading: authLoading } = useAuth();
+    const { user } = useAuth();
     const [isVerifying, setIsVerifying] = useState(false);
     const [order, setOrder] = useState<OrderDetails | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [verificationMessage, setVerificationMessage] = useState<string>("");
+    const [isInitialized, setIsInitialized] = useState(false);
     const token = searchParams.get("token");
 
     useEffect(() => {
-        // Wait for auth to load
-        if (authLoading) return;
-
         // If no token, show error
         if (!token) {
             setError("No verification token provided in URL");
+            setIsInitialized(true);
             return;
         }
 
@@ -62,8 +61,11 @@ export default function VerifyOrderPage() {
         }
 
         // User is logged in, verify the order
-        verifyOrder();
-    }, [user, authLoading, token]);
+        if (!isInitialized) {
+            setIsInitialized(true);
+            verifyOrder();
+        }
+    }, [user, token, isInitialized]);
 
     const verifyOrder = async () => {
         if (!token || !user) return;
@@ -113,7 +115,7 @@ export default function VerifyOrderPage() {
     };
 
     // Loading state
-    if (authLoading || isVerifying) {
+    if (!isInitialized || isVerifying) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
                 <Card className="w-full max-w-md">
@@ -121,7 +123,7 @@ export default function VerifyOrderPage() {
                         <div className="flex flex-col items-center justify-center py-8">
                             <Spinner size="lg" />
                             <p className="mt-4 text-gray-600">
-                                {authLoading ? "Loading..." : "Verifying order..."}
+                                {!isInitialized ? "Loading..." : "Verifying order..."}
                             </p>
                         </div>
                     </CardContent>
@@ -280,7 +282,7 @@ export default function VerifyOrderPage() {
                 )}
 
                 {/* Not Logged In State - Should redirect, but show message briefly */}
-                {!user && !authLoading && (
+                {!user && isInitialized && (
                     <Card className="border-blue-500 bg-blue-50">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-blue-700">
