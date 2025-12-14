@@ -66,7 +66,7 @@ export default function CustomerVerifyQRPage() {
             setScanError(null);
             const scanner = new Html5Qrcode("qr-reader");
             scannerRef.current = scanner;
-            
+
             await scanner.start(
                 { facingMode: "environment" },
                 {
