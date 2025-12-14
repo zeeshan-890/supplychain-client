@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import QRCode from "qrcode";
-import { Eye, Check, X, RefreshCw, Package, Truck, Printer } from "lucide-react";
+import { Eye, Check, X, RefreshCw, Package, Truck, Printer, QrCode as QrCodeIcon } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
 import { Badge } from "@/components/ui/Badge";
@@ -414,23 +414,17 @@ export default function SupplierOrdersManagePage() {
                                                                     Ship
                                                                 </Button>
                                                             )}
-                                                        {/* Show QR button after order is shipped (IN_TRANSIT) */}
-                                                        {order.status === OrderStatus.APPROVED && (() => {
-                                                            const latestLeg = order.legs?.reduce((latest: any, leg: any) =>
-                                                                !latest || leg.legNumber > latest.legNumber ? leg : latest,
-                                                                null
-                                                            );
-                                                            return latestLeg?.status === 'IN_TRANSIT' && latestLeg?.fromType === 'SUPPLIER' && order.qrToken;
-                                                        })() && (
-                                                                <Button
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    onClick={() => handleShowQR(order)}
-                                                                >
-                                                                    <Printer className="mr-1 h-4 w-4" />
-                                                                    QR Code
-                                                                </Button>
-                                                            )}
+                                                        {/* Show QR button for all approved orders with qrToken */}
+                                                        {(order.status === OrderStatus.APPROVED || order.status === OrderStatus.IN_PROGRESS || order.status === OrderStatus.DELIVERED) && order.qrToken && (
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => handleShowQR(order)}
+                                                            >
+                                                                <QrCodeIcon className="mr-1 h-4 w-4" />
+                                                                QR Code
+                                                            </Button>
+                                                        )}
                                                         <Button variant="ghost" size="sm">
                                                             <Eye className="h-4 w-4" />
                                                         </Button>
