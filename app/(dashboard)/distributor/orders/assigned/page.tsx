@@ -19,6 +19,7 @@ import { useToast } from "@/context/ToastContext";
 export default function AssignedOrdersPage() {
     const { showToast } = useToast();
     const [showRejectDialog, setShowRejectDialog] = useState(false);
+    const [showAcceptDialog, setShowAcceptDialog] = useState(false);
     const [selectedLeg, setSelectedLeg] = useState<any>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [rejectReason, setRejectReason] = useState('');
@@ -44,13 +45,19 @@ export default function AssignedOrdersPage() {
         }
     };
 
-    const handleAccept = async (leg: any) => {
-        if (!confirm('Accept this delivery assignment?')) return;
+    const handleAccept = (leg: any) => {
+        setSelectedLeg(leg);
+        setShowAcceptDialog(true);
+    };
+
+    const submitAcceptance = async () => {
+        if (!selectedLeg) return;
 
         try {
             setIsSubmitting(true);
-            await distributorService.acceptLeg(leg.id);
+            await distributorService.acceptLeg(selectedLeg.id);
             showToast("Order accepted successfully!", "success");
+            setShowAcceptDialog(false);
             refetch();
         } catch (error: any) {
             showToast(error.response?.data?.message || "Failed to accept order", "error");
@@ -185,7 +192,7 @@ export default function AssignedOrdersPage() {
                                             <TableCell>{leg.order?.quantity}</TableCell>
                                             <TableCell>
                                                 {leg.fromType === 'SUPPLIER'
-                                                    ? leg.fromSupplier?.companyName || "Supplier"
+                                                    ? leg.fromSupplier?.businessName || "Supplier"
                                                     : leg.fromDistributor?.businessName || "Distributor"}
                                             </TableCell>
                                             <TableCell>{leg.order?.customer?.name || "N/A"}</TableCell>
@@ -254,7 +261,7 @@ export default function AssignedOrdersPage() {
                                             <TableCell>{leg.order?.quantity}</TableCell>
                                             <TableCell>
                                                 {leg.fromType === 'SUPPLIER'
-                                                    ? leg.fromSupplier?.companyName || "Supplier"
+                                                    ? leg.fromSupplier?.businessName || "Supplier"
                                                     : leg.fromDistributor?.businessName || "Distributor"}
                                             </TableCell>
                                             <TableCell>{leg.transporter?.name || "N/A"}</TableCell>
@@ -311,7 +318,7 @@ export default function AssignedOrdersPage() {
                                             <TableCell>{leg.order?.quantity}</TableCell>
                                             <TableCell>
                                                 {leg.fromType === 'SUPPLIER'
-                                                    ? leg.fromSupplier?.companyName || "Supplier"
+                                                    ? leg.fromSupplier?.businessName || "Supplier"
                                                     : leg.fromDistributor?.businessName || "Distributor"}
                                             </TableCell>
                                             <TableCell>
@@ -339,19 +346,51 @@ export default function AssignedOrdersPage() {
                     </Card>
                 )}
 
+                {/* Accept Order Dialog */}
+                <Dialog open={showAcceptDialog} onClose={() => setShowAcceptDialog(false)}>
+                    <div className="p-6 bg-black text-white">
+                        <h2 className="text-2xl font-bold text-white mb-6">Accept Order</h2>
+                        {selectedLeg && (
+                            <div className="mb-6 p-4 bg-gray-900 rounded-lg border border-gray-800">
+                                <h3 className="font-semibold text-white mb-2">Order #{selectedLeg.order?.id}</h3>
+                                <div className="space-y-1 text-sm">
+                                    <p className="text-gray-300">Product: <span className="font-medium text-white">{selectedLeg.order?.product?.name}</span></p>
+                                    <p className="text-gray-300">Quantity: <span className="font-medium text-white">{selectedLeg.order?.quantity}</span></p>
+                                    <p className="text-gray-300">From: <span className="font-medium text-white">
+                                        {selectedLeg.fromType === 'SUPPLIER'
+                                            ? selectedLeg.fromSupplier?.businessName || "Supplier"
+                                            : selectedLeg.fromDistributor?.businessName || "Distributor"}
+                                    </span></p>
+                                </div>
+                            </div>
+                        )}
+                        <p className="text-gray-300 mb-6">
+                            By accepting this order, you confirm that you will receive and handle this delivery assignment.
+                        </p>
+                        <div className="flex gap-3">
+                            <Button onClick={submitAcceptance} disabled={isSubmitting} className="bg-green-600 hover:bg-green-700 text-white">
+                                {isSubmitting ? 'Accepting...' : 'Confirm Accept'}
+                            </Button>
+                            <Button variant="outline" onClick={() => setShowAcceptDialog(false)} className="bg-gray-900 text-white border-gray-700 hover:bg-gray-800">
+                                Cancel
+                            </Button>
+                        </div>
+                    </div>
+                </Dialog>
+
                 {/* Reject Order Dialog */}
                 <Dialog open={showRejectDialog} onClose={() => setShowRejectDialog(false)}>
-                    <div className="p-6">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Reject Order</h2>
+                    <div className="p-6 bg-black text-white">
+                        <h2 className="text-2xl font-bold text-white mb-6">Reject Order</h2>
                         {selectedLeg && (
-                            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                                <h3 className="font-semibold text-gray-900 mb-2">Order #{selectedLeg.order?.id}</h3>
+                            <div className="mb-6 p-4 bg-gray-900 rounded-lg border border-gray-800">
+                                <h3 className="font-semibold text-white mb-2">Order #{selectedLeg.order?.id}</h3>
                                 <div className="space-y-1 text-sm">
-                                    <p className="text-gray-600">Product: <span className="font-medium">{selectedLeg.order?.product?.name}</span></p>
-                                    <p className="text-gray-600">Quantity: <span className="font-medium">{selectedLeg.order?.quantity}</span></p>
-                                    <p className="text-gray-600">From: <span className="font-medium">
+                                    <p className="text-gray-300">Product: <span className="font-medium text-white">{selectedLeg.order?.product?.name}</span></p>
+                                    <p className="text-gray-300">Quantity: <span className="font-medium text-white">{selectedLeg.order?.quantity}</span></p>
+                                    <p className="text-gray-300">From: <span className="font-medium text-white">
                                         {selectedLeg.fromType === 'SUPPLIER'
-                                            ? selectedLeg.fromSupplier?.companyName || "Supplier"
+                                            ? selectedLeg.fromSupplier?.businessName || "Supplier"
                                             : selectedLeg.fromDistributor?.businessName || "Distributor"}
                                     </span></p>
                                 </div>
@@ -359,7 +398,7 @@ export default function AssignedOrdersPage() {
                         )}
                         <form onSubmit={submitRejection} className="space-y-4">
                             <div>
-                                <Label htmlFor="reason">Rejection Reason *</Label>
+                                <Label htmlFor="reason" className="text-white">Rejection Reason *</Label>
                                 <Textarea
                                     id="reason"
                                     placeholder="Please provide a reason for rejecting this order"
@@ -367,14 +406,15 @@ export default function AssignedOrdersPage() {
                                     onChange={(e) => setRejectReason(e.target.value)}
                                     required
                                     rows={4}
+                                    className="bg-gray-900 border-gray-800 text-white placeholder:text-gray-500"
                                 />
-                                <p className="text-xs text-gray-500 mt-1">The supplier will be notified and can reassign to another distributor</p>
+                                <p className="text-xs text-gray-400 mt-1">The supplier will be notified and can reassign to another distributor</p>
                             </div>
                             <div className="flex gap-3 pt-4">
                                 <Button type="submit" variant="destructive" disabled={isSubmitting}>
                                     {isSubmitting ? 'Rejecting...' : 'Reject Order'}
                                 </Button>
-                                <Button type="button" variant="outline" onClick={() => setShowRejectDialog(false)}>
+                                <Button type="button" variant="outline" onClick={() => setShowRejectDialog(false)} className="bg-gray-900 text-white border-gray-700 hover:bg-gray-800">
                                     Cancel
                                 </Button>
                             </div>

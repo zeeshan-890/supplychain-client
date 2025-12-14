@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { Eye, Check, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import QRCode from "qrcode";
+import { Eye, Check, X, Download, Printer } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
 import { Badge } from "@/components/ui/Badge";
@@ -24,6 +25,7 @@ export default function SupplierOrdersPage() {
     const [showApproveDialog, setShowApproveDialog] = useState(false);
     const [showRejectDialog, setShowRejectDialog] = useState(false);
     const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+    const [showQRDialog, setShowQRDialog] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<any>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [approveForm, setApproveForm] = useState({
@@ -32,6 +34,7 @@ export default function SupplierOrdersPage() {
         privateKey: ''
     });
     const [rejectReason, setRejectReason] = useState('');
+    const [qrData, setQrData] = useState<{ qrToken: string; verificationUrl: string } | null>(null);
 
     const { data: orders, isLoading, error, refetch } = useFetch(
         () => supplierService.getOrders()
@@ -44,6 +47,20 @@ export default function SupplierOrdersPage() {
     const { data: transporters } = useFetch(
         () => supplierService.getTransporters()
     );
+
+    // Generate QR code when dialog opens
+    useEffect(() => {
+        if (showQRDialog && qrData) {
+            generateQRCode().then(dataUrl => {
+                if (dataUrl) {
+                    const qrDisplay = document.getElementById('qr-display');
+                    if (qrDisplay) {
+                        qrDisplay.innerHTML = `<img src="${dataUrl}" alt="Order QR Code" class="w-64 h-64" />`;
+                    }
+                }
+            });
+        }
+    }, [showQRDialog, qrData]);
 
     const getStatusVariant = (status: OrderStatus) => {
         switch (status) {
@@ -87,14 +104,27 @@ export default function SupplierOrdersPage() {
 
         try {
             setIsSubmitting(true);
-            await orderService.approveOrder(selectedOrder.id, {
+            const response = await orderService.approveOrder(selectedOrder.id, {
                 distributorId: parseInt(approveForm.distributorId),
                 transporterId: parseInt(approveForm.transporterId),
                 privateKey: approveForm.privateKey
             });
+            
+            // Store QR data from response
+            if (response.qrToken && response.verificationUrl) {
+                setQrData({
+                    qrToken: response.qrToken,
+                    verificationUrl: response.verificationUrl
+                });
+            }
+            
             showToast("Order approved successfully!", "success");
             setShowApproveDialog(false);
             setApproveForm({ distributorId: '', transporterId: '', privateKey: '' });
+            
+            // Show QR dialog
+            setShowQRDialog(true);
+            
             refetch();
         } catch (error: any) {
             console.log('Approval error caught:', error);
@@ -135,6 +165,87 @@ export default function SupplierOrdersPage() {
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const generateQRCode = async () => {
+        if (!qrData) return null;
+        
+        try {
+            const dataUrl = await QRCode.toDataURL(qrData.verificationUrl, {
+                width: 300,
+                margin: 2,
+                color: {
+                    dark: '#000000',
+                    light: '#FFFFFF'
+                }
+            });
+            return dataUrl;
+        } catch (error) {
+            console.error('Error generating QR code:', error);
+            showToast("Failed to generate QR code", "error");
+            return null;
+        }
+    };
+
+    const handleDownloadQR = async () => {
+        const qrDataUrl = await generateQRCode();
+        if (!qrDataUrl) return;
+
+        const link = document.createElement('a');
+        link.href = qrDataUrl;
+        link.download = `order-${selectedOrder?.id}-qr.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast("QR code downloaded successfully!", "success");
+    };
+
+    const handlePrintQR = async () => {
+        const qrDataUrl = await generateQRCode();
+        if (!qrDataUrl) return;
+
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) return;
+
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Order QR Code - #${selectedOrder?.id}</title>
+                    <style>
+                        body {
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            min-height: 100vh;
+                            margin: 0;
+                            font-family: Arial, sans-serif;
+                        }
+                        .qr-container {
+                            text-align: center;
+                            padding: 20px;
+                        }
+                        h1 { margin-bottom: 10px; }
+                        p { margin: 5px 0; color: #666; }
+                        img { margin: 20px 0; border: 2px solid #000; }
+                    </style>
+                </head>
+                <body>
+                    <div class="qr-container">
+                        <h1>Order #${selectedOrder?.id}</h1>
+                        <p><strong>Product:</strong> ${selectedOrder?.product?.name}</p>
+                        <p><strong>Customer:</strong> ${selectedOrder?.customer?.name}</p>
+                        <img src="${qrDataUrl}" alt="QR Code" />
+                        <p>Scan to verify order authenticity</p>
+                    </div>
+                </body>
+            </html>
+        `);
+
+        printWindow.document.close();
+        setTimeout(() => {
+            printWindow.print();
+        }, 250);
     };
 
     if (isLoading) {
@@ -240,57 +351,57 @@ export default function SupplierOrdersPage() {
 
                 {/* Approve Order Dialog */}
                 <Dialog open={showApproveDialog} onClose={() => setShowApproveDialog(false)}>
-                    <div className="p-6">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Approve Order</h2>
+                    <div className="p-6 bg-black text-white">
+                        <h2 className="text-2xl font-bold text-white mb-6">Approve Order</h2>
                         {selectedOrder && (
-                            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                                <h3 className="font-semibold text-gray-900 mb-2">Order #{selectedOrder.id}</h3>
+                            <div className="mb-6 p-4 bg-gray-900 rounded-lg border border-gray-800">
+                                <h3 className="font-semibold text-white mb-2">Order #{selectedOrder.id}</h3>
                                 <div className="space-y-1 text-sm">
-                                    <p className="text-gray-600">Customer: <span className="font-medium">{selectedOrder.customer?.name}</span></p>
-                                    <p className="text-gray-600">Product: <span className="font-medium">{selectedOrder.product?.name}</span></p>
-                                    <p className="text-gray-600">Quantity: <span className="font-medium">{selectedOrder.quantity}</span></p>
-                                    <p className="text-gray-600">Total: <span className="font-medium text-lg">{formatCurrency(selectedOrder.totalAmount)}</span></p>
-                                    <p className="text-gray-600">Delivery: <span className="font-medium">{selectedOrder.deliveryAddress}</span></p>
+                                    <p className="text-gray-300">Customer: <span className="font-medium text-white">{selectedOrder.customer?.name}</span></p>
+                                    <p className="text-gray-300">Product: <span className="font-medium text-white">{selectedOrder.product?.name}</span></p>
+                                    <p className="text-gray-300">Quantity: <span className="font-medium text-white">{selectedOrder.quantity}</span></p>
+                                    <p className="text-gray-300">Total: <span className="font-medium text-white text-lg">{formatCurrency(selectedOrder.totalAmount)}</span></p>
+                                    <p className="text-gray-300">Delivery: <span className="font-medium text-white">{selectedOrder.deliveryAddress}</span></p>
                                 </div>
                             </div>
                         )}
                         <form onSubmit={submitApproval} className="space-y-4">
                             <div>
-                                <Label htmlFor="distributor">Select Distributor *</Label>
+                                <Label htmlFor="distributor" className="text-white">Select Distributor *</Label>
                                 <select
                                     id="distributor"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full px-3 py-2 border border-gray-700 rounded-md bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={approveForm.distributorId}
                                     onChange={(e) => setApproveForm({ ...approveForm, distributorId: e.target.value })}
                                     required
                                 >
-                                    <option value="" className="text-gray-500">Choose a distributor</option>
+                                    <option value="" className="text-gray-400">Choose a distributor</option>
                                     {distributors?.map((dist: any) => (
-                                        <option key={dist.id} value={dist.id} className="text-gray-900">
+                                        <option key={dist.id} value={dist.id} className="text-white">
                                             {dist.businessName} - {dist.user?.name}
                                         </option>
                                     ))}
                                 </select>
                             </div>
                             <div>
-                                <Label htmlFor="transporter">Select Transporter *</Label>
+                                <Label htmlFor="transporter" className="text-white">Select Transporter *</Label>
                                 <select
                                     id="transporter"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full px-3 py-2 border border-gray-700 rounded-md bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={approveForm.transporterId}
                                     onChange={(e) => setApproveForm({ ...approveForm, transporterId: e.target.value })}
                                     required
                                 >
-                                    <option value="" className="text-gray-500">Choose a transporter</option>
+                                    <option value="" className="text-gray-400">Choose a transporter</option>
                                     {transporters?.map((trans: any) => (
-                                        <option key={trans.id} value={trans.id} className="text-gray-900">
+                                        <option key={trans.id} value={trans.id} className="text-white">
                                             {trans.name} - {trans.phone}
                                         </option>
                                     ))}
                                 </select>
                             </div>
                             <div>
-                                <Label htmlFor="privateKey">Private Key *</Label>
+                                <Label htmlFor="privateKey" className="text-white">Private Key *</Label>
                                 <Input
                                     id="privateKey"
                                     type="password"
@@ -298,14 +409,15 @@ export default function SupplierOrdersPage() {
                                     value={approveForm.privateKey}
                                     onChange={(e) => setApproveForm({ ...approveForm, privateKey: e.target.value })}
                                     required
+                                    className="bg-gray-900 border-gray-700 text-white placeholder:text-gray-500"
                                 />
-                                <p className="text-xs text-gray-500 mt-1">Required for order verification and digital signature</p>
+                                <p className="text-xs text-gray-400 mt-1">Required for order verification and digital signature</p>
                             </div>
                             <div className="flex gap-3 pt-4">
-                                <Button type="submit" disabled={isSubmitting}>
+                                <Button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 text-white">
                                     {isSubmitting ? 'Approving...' : 'Approve Order'}
                                 </Button>
-                                <Button type="button" variant="outline" onClick={() => setShowApproveDialog(false)}>
+                                <Button type="button" variant="outline" onClick={() => setShowApproveDialog(false)} className="bg-gray-900 text-white border-gray-700 hover:bg-gray-800">
                                     Cancel
                                 </Button>
                             </div>
@@ -496,6 +608,65 @@ export default function SupplierOrdersPage() {
                                 Close
                             </Button>
                         </div>
+                    </div>
+                </Dialog>
+
+                {/* QR Code Dialog */}
+                <Dialog open={showQRDialog} onClose={() => setShowQRDialog(false)}>
+                    <div className="p-6 bg-black text-white">
+                        <h2 className="text-2xl font-bold text-white mb-6">Order QR Code Generated</h2>
+                        {qrData && selectedOrder && (
+                            <div className="space-y-6">
+                                <div className="p-4 bg-gray-900 rounded-lg border border-gray-800">
+                                    <h3 className="font-semibold text-white mb-2">Order #{selectedOrder.id}</h3>
+                                    <div className="space-y-1 text-sm">
+                                        <p className="text-gray-300">Product: <span className="font-medium text-white">{selectedOrder.product?.name}</span></p>
+                                        <p className="text-gray-300">Customer: <span className="font-medium text-white">{selectedOrder.customer?.name}</span></p>
+                                        <p className="text-gray-300">Quantity: <span className="font-medium text-white">{selectedOrder.quantity}</span></p>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white p-6 rounded-lg flex flex-col items-center">
+                                    <p className="text-gray-900 font-semibold mb-4">Scan to Verify Order</p>
+                                    <div id="qr-display">
+                                        {/* QR Code will be displayed here */}
+                                    </div>
+                                    <p className="text-sm text-gray-600 mt-4 text-center max-w-sm">
+                                        Customers can scan this QR code to verify the authenticity and track the order
+                                    </p>
+                                </div>
+
+                                <div className="bg-gray-900 p-4 rounded-lg border border-gray-800">
+                                    <p className="text-xs text-gray-400 mb-2">Verification URL:</p>
+                                    <code className="text-xs text-green-400 break-all">{qrData.verificationUrl}</code>
+                                </div>
+
+                                <div className="flex gap-3">
+                                    <Button 
+                                        onClick={handleDownloadQR}
+                                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                                    >
+                                        <Download className="mr-2 h-4 w-4" />
+                                        Download QR
+                                    </Button>
+                                    <Button 
+                                        onClick={handlePrintQR}
+                                        className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                                    >
+                                        <Printer className="mr-2 h-4 w-4" />
+                                        Print QR
+                                    </Button>
+                                </div>
+
+                                <Button 
+                                    variant="outline" 
+                                    onClick={() => setShowQRDialog(false)}
+                                    className="w-full bg-gray-900 text-white border-gray-700 hover:bg-gray-800"
+                                >
+                                    Close
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 </Dialog>
             </div>
