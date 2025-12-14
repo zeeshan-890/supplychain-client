@@ -188,23 +188,23 @@ export default function ProductsPage() {
 
                 {/* Order Dialog */}
                 <Dialog open={showOrderDialog} onClose={handleCloseOrderDialog}>
-                    <div className="p-6">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Place Order</h2>
+                    <div className="p-6 bg-black text-white">
+                        <h2 className="text-2xl font-bold text-white mb-6">Place Order</h2>
                         {selectedProduct && (
-                            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                                <h3 className="font-semibold text-gray-900 mb-2">{selectedProduct.name}</h3>
+                            <div className="mb-6 p-4 bg-gray-900 rounded-lg border border-gray-800">
+                                <h3 className="font-semibold text-white mb-2">{selectedProduct.name}</h3>
                                 <div className="space-y-1 text-sm">
-                                    <p className="text-gray-600">Category: <span className="font-medium">{selectedProduct.category}</span></p>
-                                    <p className="text-gray-600">Batch: <span className="font-medium">{selectedProduct.batchNo}</span></p>
-                                    <p className="text-gray-600">Price: <span className="font-medium text-lg">{formatCurrency(selectedProduct.price)}</span></p>
-                                    <p className="text-gray-600">Available: <span className="font-medium">{getAvailableStock(selectedProduct)} units</span></p>
+                                    <p className="text-gray-300">Category: <span className="font-medium text-white">{selectedProduct.category}</span></p>
+                                    <p className="text-gray-300">Batch: <span className="font-medium text-white">{selectedProduct.batchNo}</span></p>
+                                    <p className="text-gray-300">Price: <span className="font-medium text-lg text-white">{formatCurrency(selectedProduct.price)}</span></p>
+                                    <p className="text-gray-300">Available: <span className="font-medium text-white">{getAvailableStock(selectedProduct)} units</span></p>
                                 </div>
                             </div>
                         )}
 
                         <form onSubmit={handlePlaceOrder} className="space-y-4">
                             <div>
-                                <Label htmlFor="quantity">Quantity *</Label>
+                                <Label htmlFor="quantity" className="text-white">Quantity *</Label>
                                 <Input
                                     id="quantity"
                                     type="number"
@@ -213,16 +213,17 @@ export default function ProductsPage() {
                                     value={orderForm.quantity}
                                     onChange={(e) => setOrderForm({ ...orderForm, quantity: parseInt(e.target.value) || 1 })}
                                     required
+                                    className="bg-gray-900 border-gray-800 text-white placeholder:text-gray-500"
                                 />
                                 {selectedProduct && (
-                                    <p className="text-sm text-muted-foreground mt-1">
+                                    <p className="text-sm text-gray-300 mt-1">
                                         Total: {formatCurrency(selectedProduct.price * orderForm.quantity)}
                                     </p>
                                 )}
                             </div>
 
                             <div>
-                                <Label htmlFor="deliveryAddress">Delivery Address *</Label>
+                                <Label htmlFor="deliveryAddress" className="text-white">Delivery Address *</Label>
                                 <Textarea
                                     id="deliveryAddress"
                                     value={orderForm.deliveryAddress}
@@ -230,11 +231,12 @@ export default function ProductsPage() {
                                     placeholder="Enter your complete delivery address"
                                     rows={3}
                                     required
+                                    className="bg-gray-900 border-gray-800 text-white placeholder:text-gray-500"
                                 />
                             </div>
 
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                                <p className="text-sm text-blue-800">
+                            <div className="bg-blue-950 border border-blue-800 rounded-lg p-3">
+                                <p className="text-sm text-blue-300">
                                     <strong>Note:</strong> Your order will be sent to the supplier for approval. You will be notified once the supplier reviews your request.
                                 </p>
                             </div>
@@ -245,6 +247,7 @@ export default function ProductsPage() {
                                     variant="outline"
                                     onClick={handleCloseOrderDialog}
                                     disabled={isSubmitting}
+                                    className="bg-gray-900 text-white border-gray-700 hover:bg-gray-800"
                                 >
                                     Cancel
                                 </Button>

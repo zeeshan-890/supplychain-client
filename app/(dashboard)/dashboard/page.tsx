@@ -143,7 +143,6 @@ export default function DashboardPage() {
                 return [
                     { label: "Browse Products", href: ROUTES.CUSTOMER.PRODUCTS, icon: Package },
                     { label: "My Orders", href: ROUTES.CUSTOMER.ORDERS, icon: ShoppingCart },
-                    { label: "Verify Product", href: ROUTES.CUSTOMER.VERIFY, icon: TrendingUp },
                     { label: "Upgrade Role", href: ROUTES.CUSTOMER.ROLE_REQUEST, icon: UserPlus },
                 ];
             case Role.SUPPLIER:
