@@ -225,8 +225,8 @@ export default function InventoryPage() {
 
             {/* Add/Edit Dialog */}
             <Dialog open={showDialog} onClose={() => { setShowDialog(false); resetForm(); }}>
-                <div className="p-6">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                <div className="p-6 bg-black text-white">
+                    <h2 className="text-2xl font-bold text-white mb-6">
                         {editingItem ? 'Edit Inventory' : 'Add Inventory'}
                     </h2>
 
@@ -234,12 +234,13 @@ export default function InventoryPage() {
                         {!editingItem && (
                             <>
                                 <div>
-                                    <Label htmlFor="productId">Product</Label>
+                                    <Label htmlFor="productId" className="text-white">Product</Label>
                                     <Select
                                         id="productId"
                                         value={formData.productId}
                                         onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
                                         required
+                                        className="bg-gray-900 border-gray-800 text-white"
                                     >
                                         <option value="">Select a product</option>
                                         {products.map(product => (
@@ -251,12 +252,13 @@ export default function InventoryPage() {
                                 </div>
 
                                 <div>
-                                    <Label htmlFor="warehouseId">Warehouse</Label>
+                                    <Label htmlFor="warehouseId" className="text-white">Warehouse</Label>
                                     <Select
                                         id="warehouseId"
                                         value={formData.warehouseId}
                                         onChange={(e) => setFormData({ ...formData, warehouseId: e.target.value })}
                                         required
+                                        className="bg-gray-900 border-gray-800 text-white"
                                     >
                                         <option value="">Select a warehouse</option>
                                         {warehouses.map(warehouse => (
@@ -270,7 +272,7 @@ export default function InventoryPage() {
                         )}
 
                         <div>
-                            <Label htmlFor="quantity">Quantity</Label>
+                            <Label htmlFor="quantity" className="text-white">Quantity</Label>
                             <Input
                                 id="quantity"
                                 type="number"
@@ -278,6 +280,7 @@ export default function InventoryPage() {
                                 onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
                                 required
                                 min="0"
+                                className="bg-gray-900 border-gray-800 text-white placeholder:text-gray-500"
                             />
                         </div>
 
@@ -286,6 +289,7 @@ export default function InventoryPage() {
                                 type="button"
                                 variant="outline"
                                 onClick={() => { setShowDialog(false); resetForm(); }}
+                                className="bg-gray-900 text-white border-gray-700 hover:bg-gray-800"
                             >
                                 Cancel
                             </Button>
