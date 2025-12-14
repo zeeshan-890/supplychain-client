@@ -100,7 +100,7 @@ export default function SupplierOrdersPage() {
 
     const handleGenerateQR = async (order: any) => {
         setSelectedOrder(order);
-        
+
         // Check if order already has QR data
         if (order.qrToken) {
             const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
