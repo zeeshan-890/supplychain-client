@@ -124,7 +124,7 @@ export default function CustomerVerifyQRPage() {
 
     const handleVerifyWithToken = async (token: string) => {
         const trimmedToken = token.trim();
-        
+
         if (!trimmedToken) {
             showToast("Please enter a QR code token", "error");
             return;
