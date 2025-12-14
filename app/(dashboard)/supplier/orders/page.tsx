@@ -121,14 +121,15 @@ export default function SupplierOrdersPage() {
 
         try {
             setIsSubmitting(true);
-            const response = await orderService.approveOrder(selectedOrder.id, {
+            const response: any = await orderService.approveOrder(selectedOrder.id, {
                 distributorId: parseInt(approveForm.distributorId),
                 transporterId: parseInt(approveForm.transporterId),
                 privateKey: approveForm.privateKey
             });
 
             // Store QR data from response
-            if (response.qrToken && response.verificationUrl) {
+            // @ts-ignore - Backend returns qrToken and verificationUrl
+            if (response?.qrToken && response?.verificationUrl) {
                 setQrData({
                     qrToken: response.qrToken,
                     verificationUrl: response.verificationUrl
