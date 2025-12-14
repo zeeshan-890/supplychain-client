@@ -101,12 +101,14 @@ export default function CustomerVerifyQRPage() {
     };
 
     const handleScanSuccess = (decodedText: string) => {
-        setQrToken(decodedText);
+        console.log("Scanned QR code:", decodedText);
+        const trimmedToken = decodedText.trim();
+        setQrToken(trimmedToken);
         setShowScanner(false);
         stopScanner();
         showToast("QR code scanned successfully!", "success");
         // Automatically verify after scanning
-        handleVerifyWithToken(decodedText);
+        handleVerifyWithToken(trimmedToken);
     };
 
     const toggleScanner = async () => {
@@ -121,16 +123,22 @@ export default function CustomerVerifyQRPage() {
     };
 
     const handleVerifyWithToken = async (token: string) => {
-        if (!token.trim()) {
+        const trimmedToken = token.trim();
+        
+        if (!trimmedToken) {
             showToast("Please enter a QR code token", "error");
             return;
         }
+
+        console.log("Verifying token:", trimmedToken);
+        console.log("Token length:", trimmedToken.length);
 
         try {
             setIsVerifying(true);
             setVerificationResult(null);
 
-            const response = await axios.get(`/verification?token=${token}`);
+            const response = await axios.get(`/verification?token=${encodeURIComponent(trimmedToken)}`);
+            console.log("Verification response:", response.data);
 
             // Backend returns { valid: true/false, message, order: {...}, error }
             if (!response.data.valid) {
@@ -151,7 +159,8 @@ export default function CustomerVerifyQRPage() {
                 showToast("Order verified successfully!", "success");
             }
         } catch (error: any) {
-            const errorMessage = error.response?.data?.message || "Failed to verify QR code";
+            console.error("Verification error:", error);
+            const errorMessage = error.response?.data?.message || error.message || "Failed to verify QR code";
             setVerificationResult({
                 success: false,
                 message: errorMessage,
@@ -238,11 +247,11 @@ export default function CustomerVerifyQRPage() {
                             <div className="flex gap-3">
                                 <Input
                                     type="text"
-                                    placeholder="Enter QR code token (e.g., abc123xyz...)"
+                                    placeholder="Enter QR code token"
                                     value={qrToken}
                                     onChange={(e) => setQrToken(e.target.value)}
                                     onKeyPress={handleKeyPress}
-                                    className="flex-1"
+                                    className="flex-1 font-mono text-sm"
                                 />
                                 <Button onClick={handleVerify} disabled={isVerifying || !qrToken.trim()}>
                                     {isVerifying ? (
@@ -258,6 +267,13 @@ export default function CustomerVerifyQRPage() {
                                     )}
                                 </Button>
                             </div>
+                            {qrToken && (
+                                <div className="text-xs text-muted-foreground p-2 bg-gray-50 rounded border">
+                                    <p className="font-semibold mb-1">Token Preview:</p>
+                                    <p className="break-all font-mono">{qrToken}</p>
+                                    <p className="mt-1">Length: {qrToken.length} characters</p>
+                                </div>
+                            )}
                         </div>
                     </CardContent>
                 </Card>
