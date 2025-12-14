@@ -11,7 +11,7 @@ export default function CookieConsent() {
     useEffect(() => {
         // Check if user has already accepted cookies
         const consent = getCookie('cookieConsent');
-        
+
         if (!consent) {
             // Small delay to ensure page is loaded
             const timer = setTimeout(() => {
@@ -24,34 +24,34 @@ export default function CookieConsent() {
     const acceptCookies = () => {
         // Set cookie for 365 days
         setCookie('cookieConsent', 'accepted', 365);
-        
+
         // Also set in localStorage as backup
         try {
             localStorage.setItem('cookieConsent', 'accepted');
         } catch (e) {
             console.log('localStorage not available');
         }
-        
+
         console.log('Cookie consent accepted');
         console.log('Cookie value:', getCookie('cookieConsent'));
-        
+
         setShowBanner(false);
     };
 
     const rejectCookies = () => {
         // Set cookie for 365 days
         setCookie('cookieConsent', 'rejected', 365);
-        
+
         // Also set in localStorage as backup
         try {
             localStorage.setItem('cookieConsent', 'rejected');
         } catch (e) {
             console.log('localStorage not available');
         }
-        
+
         console.log('Cookie consent rejected');
         console.log('Cookie value:', getCookie('cookieConsent'));
-        
+
         setShowBanner(false);
     };
 

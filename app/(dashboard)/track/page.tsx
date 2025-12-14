@@ -76,8 +76,8 @@ export default function TrackOrderPage() {
 
     const getCurrentLocation = () => {
         if (!order?.legs || order.legs.length === 0) return 'Preparing for shipment';
-        
-        const latestLeg = order.legs.reduce((latest, leg) => 
+
+        const latestLeg = order.legs.reduce((latest, leg) =>
             leg.legNumber > latest.legNumber ? leg : latest
         );
 
@@ -218,9 +218,8 @@ export default function TrackOrderPage() {
                                                 <div key={leg.id} className="relative">
                                                     {/* Connecting Line */}
                                                     {index < order.legs!.length - 1 && (
-                                                        <div className={`absolute left-3 top-12 w-0.5 h-full ${
-                                                            leg.status === 'DELIVERED' ? 'bg-green-600' : 'bg-gray-300'
-                                                        }`}></div>
+                                                        <div className={`absolute left-3 top-12 w-0.5 h-full ${leg.status === 'DELIVERED' ? 'bg-green-600' : 'bg-gray-300'
+                                                            }`}></div>
                                                     )}
 
                                                     <div className="flex gap-4">
