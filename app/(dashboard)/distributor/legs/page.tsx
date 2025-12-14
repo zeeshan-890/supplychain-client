@@ -200,8 +200,8 @@ export default function OutgoingLegsPage() {
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex gap-2">
-                                                    {/* Ship button for PENDING or ACCEPTED legs */}
-                                                    {(leg.status === 'PENDING' || leg.status === 'ACCEPTED') && (
+                                                    {/* Ship button only for ACCEPTED legs (next distributor must accept first) */}
+                                                    {leg.status === 'ACCEPTED' && (
                                                         <Button
                                                             size="sm"
                                                             onClick={() => handleShip(leg.id)}
@@ -216,6 +216,11 @@ export default function OutgoingLegsPage() {
                                                                 </>
                                                             )}
                                                         </Button>
+                                                    )}
+                                                    {leg.status === 'PENDING' && (
+                                                        <Badge variant="default" className="text-xs">
+                                                            Awaiting Acceptance
+                                                        </Badge>
                                                     )}
                                                 </div>
                                             </TableCell>
