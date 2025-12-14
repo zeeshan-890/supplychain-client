@@ -3,7 +3,6 @@
 import { ReactNode } from "react";
 import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
-import Footer from "@/components/layout/Footer";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
     return (
@@ -15,7 +14,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                     {children}
                 </main>
             </div>
-            <Footer />
         </div>
     );
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import QRCode from "qrcode";
-import { Eye, Check, X, Download, Printer } from "lucide-react";
+import { Eye, Check, X, Download, Printer, QrCode as QrCodeIcon } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
 import { Badge } from "@/components/ui/Badge";
@@ -98,6 +98,23 @@ export default function SupplierOrdersPage() {
         setShowDetailsDialog(true);
     };
 
+    const handleGenerateQR = async (order: any) => {
+        setSelectedOrder(order);
+        
+        // Check if order already has QR data
+        if (order.qrToken) {
+            const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
+            const verificationUrl = `${baseUrl}/verify?token=${order.qrToken}`;
+            setQrData({
+                qrToken: order.qrToken,
+                verificationUrl: verificationUrl
+            });
+            setShowQRDialog(true);
+        } else {
+            showToast("QR code not available for this order", "error");
+        }
+    };
+
     const submitApproval = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedOrder) return;
@@ -121,9 +138,6 @@ export default function SupplierOrdersPage() {
             showToast("Order approved successfully!", "success");
             setShowApproveDialog(false);
             setApproveForm({ distributorId: '', transporterId: '', privateKey: '' });
-
-            // Show QR dialog
-            setShowQRDialog(true);
 
             refetch();
         } catch (error: any) {
@@ -331,6 +345,16 @@ export default function SupplierOrdersPage() {
                                                                 Reject
                                                             </Button>
                                                         </>
+                                                    )}
+                                                    {(order.status === OrderStatus.APPROVED || order.status === OrderStatus.IN_PROGRESS || order.status === OrderStatus.DELIVERED) && order.qrToken && (
+                                                        <Button
+                                                            variant="default"
+                                                            size="sm"
+                                                            onClick={() => handleGenerateQR(order)}
+                                                        >
+                                                            <QrCodeIcon className="mr-1 h-4 w-4" />
+                                                            QR Code
+                                                        </Button>
                                                     )}
                                                     <Button
                                                         variant="ghost"
