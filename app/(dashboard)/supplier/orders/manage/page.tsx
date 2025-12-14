@@ -665,7 +665,7 @@ export default function SupplierOrdersManagePage() {
                                                     <input
                                                         type="text"
                                                         readOnly
-                                                        value={`${window.location.origin}/verify?token=${selectedOrder.qrToken}`}
+                                                        value={`${window.location.origin}/verify-order?token=${selectedOrder.qrToken}`}
                                                         className="flex-1 px-3 py-2 text-sm bg-white border border-gray-300 rounded text-gray-700 font-mono"
                                                         onClick={(e) => (e.target as HTMLInputElement).select()}
                                                     />
