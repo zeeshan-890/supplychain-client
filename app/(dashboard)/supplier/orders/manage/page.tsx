@@ -707,7 +707,7 @@ export default function SupplierOrdersManagePage() {
                                                                     <div className="flex items-start justify-between mb-2">
                                                                         <div>
                                                                             <h5 className="font-semibold text-gray-900">
-                                                                                {event.eventType.replace(/_/g, ' ')}
+                                                                                {event.eventType?.replace(/_/g, ' ') || 'Unknown Event'}
                                                                             </h5>
                                                                             <p className="text-sm text-gray-600 mt-1">
                                                                                 {event.description}
