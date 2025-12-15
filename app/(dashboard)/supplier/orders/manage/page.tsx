@@ -682,12 +682,12 @@ export default function SupplierOrdersManagePage() {
                                                             {/* Timeline Dot */}
                                                             <div className="relative z-10 flex-shrink-0">
                                                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${event.eventType === 'ORDER_CREATED' ? 'bg-blue-500' :
-                                                                        event.eventType === 'ORDER_APPROVED' ? 'bg-green-500' :
-                                                                            event.eventType === 'SHIPPED' ? 'bg-indigo-500' :
-                                                                                event.eventType === 'IN_TRANSIT' ? 'bg-yellow-500' :
-                                                                                    event.eventType === 'DELIVERED' ? 'bg-emerald-500' :
-                                                                                        event.eventType === 'REJECTED' ? 'bg-red-500' :
-                                                                                            'bg-gray-500'
+                                                                    event.eventType === 'ORDER_APPROVED' ? 'bg-green-500' :
+                                                                        event.eventType === 'SHIPPED' ? 'bg-indigo-500' :
+                                                                            event.eventType === 'IN_TRANSIT' ? 'bg-yellow-500' :
+                                                                                event.eventType === 'DELIVERED' ? 'bg-emerald-500' :
+                                                                                    event.eventType === 'REJECTED' ? 'bg-red-500' :
+                                                                                        'bg-gray-500'
                                                                     }`}>
                                                                     {event.eventType === 'SHIPPED' || event.eventType === 'IN_TRANSIT' ? (
                                                                         <Truck className="w-4 h-4 text-white" />
