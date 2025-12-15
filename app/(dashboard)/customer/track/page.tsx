@@ -174,7 +174,7 @@ export default function TrackOrderPage() {
                                                     <div className="mt-3 space-y-2">
                                                         {leg.trackingEvents.map((event: any) => (
                                                             <div key={event.id} className="text-sm">
-                                                                <p className="font-medium">{event.eventType}</p>
+                                                                <p className="font-medium">{event.status?.replace(/_/g, ' ') || 'Unknown Event'}</p>
                                                                 <p className="text-muted-foreground">
                                                                     {event.location} - {formatDate(event.timestamp)}
                                                                 </p>

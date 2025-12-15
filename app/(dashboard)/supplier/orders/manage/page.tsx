@@ -681,19 +681,19 @@ export default function SupplierOrdersManagePage() {
                                                         <div key={event.id} className="relative flex gap-4">
                                                             {/* Timeline Dot */}
                                                             <div className="relative z-10 flex-shrink-0">
-                                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${event.eventType === 'ORDER_CREATED' ? 'bg-blue-500' :
-                                                                    event.eventType === 'ORDER_APPROVED' ? 'bg-green-500' :
-                                                                        event.eventType === 'SHIPPED' ? 'bg-indigo-500' :
-                                                                            event.eventType === 'IN_TRANSIT' ? 'bg-yellow-500' :
-                                                                                event.eventType === 'DELIVERED' ? 'bg-emerald-500' :
-                                                                                    event.eventType === 'REJECTED' ? 'bg-red-500' :
+                                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${event.status === 'ORDER_CREATED' ? 'bg-blue-500' :
+                                                                    event.status === 'ORDER_APPROVED' ? 'bg-green-500' :
+                                                                        event.status === 'SHIPPED' ? 'bg-indigo-500' :
+                                                                            event.status === 'IN_TRANSIT' ? 'bg-yellow-500' :
+                                                                                event.status === 'DELIVERED' ? 'bg-emerald-500' :
+                                                                                    event.status === 'REJECTED' ? 'bg-red-500' :
                                                                                         'bg-gray-500'
                                                                     }`}>
-                                                                    {event.eventType === 'SHIPPED' || event.eventType === 'IN_TRANSIT' ? (
+                                                                    {event.status === 'SHIPPED' || event.status === 'IN_TRANSIT' ? (
                                                                         <Truck className="w-4 h-4 text-white" />
-                                                                    ) : event.eventType === 'DELIVERED' ? (
+                                                                    ) : event.status === 'DELIVERED' ? (
                                                                         <Package className="w-4 h-4 text-white" />
-                                                                    ) : event.eventType === 'REJECTED' ? (
+                                                                    ) : event.status === 'REJECTED' ? (
                                                                         <X className="w-4 h-4 text-white" />
                                                                     ) : (
                                                                         <Check className="w-4 h-4 text-white" />
@@ -707,7 +707,7 @@ export default function SupplierOrdersManagePage() {
                                                                     <div className="flex items-start justify-between mb-2">
                                                                         <div>
                                                                             <h5 className="font-semibold text-gray-900">
-                                                                                {event.eventType?.replace(/_/g, ' ') || 'Unknown Event'}
+                                                                                {event.status?.replace(/_/g, ' ') || 'Unknown Event'}
                                                                             </h5>
                                                                             <p className="text-sm text-gray-600 mt-1">
                                                                                 {event.description}
