@@ -43,6 +43,7 @@ export interface AuthResponse {
 export interface CurrentUserResponse {
     id: number;
     email: string;
+    name: string;
     role: Role;
     supplierProfileId: number | null;
     distributorProfileId: number | null;

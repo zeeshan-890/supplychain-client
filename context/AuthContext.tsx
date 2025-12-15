@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser({
                 id: currentUser.id,
                 email: currentUser.email,
-                name: '', // Will be fetched from user profile if needed
+                name: currentUser.name,
                 role: currentUser.role,
                 hasSupplierProfile: !!currentUser.supplierProfileId,
                 hasDistributorProfile: !!currentUser.distributorProfileId,

@@ -44,12 +44,10 @@ export default function UsersPage() {
 
 
     const handleDeleteUser = async (userId: number) => {
-        if (!confirm('Are you sure you want to delete this user?')) return;
+        if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
 
         try {
-            // Note: Backend doesn't support deleting other users
-            // This would need an admin-specific endpoint
-            await userService.deleteUser();
+            await userService.deleteUserById(userId);
             showToast('User deleted successfully', 'success');
             fetchUsers();
         } catch (error: any) {

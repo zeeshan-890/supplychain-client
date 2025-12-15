@@ -21,43 +21,53 @@ export default function DashboardPage() {
 
     // Fetch data based on role
     const { data: customerOrders } = useFetch(
-        () => user?.role === Role.CUSTOMER ? orderService.getMyOrders() : Promise.resolve([])
+        () => user?.role === Role.CUSTOMER ? orderService.getMyOrders() : Promise.resolve([]),
+        { skip: !user || user.role !== Role.CUSTOMER }
     );
 
     const { data: supplierProducts } = useFetch(
-        () => user?.role === Role.SUPPLIER ? supplierService.getProducts() : Promise.resolve([])
+        () => user?.role === Role.SUPPLIER ? supplierService.getProducts() : Promise.resolve([]),
+        { skip: !user || user.role !== Role.SUPPLIER }
     );
 
     const { data: supplierInventory } = useFetch(
-        () => user?.role === Role.SUPPLIER ? supplierService.getInventory() : Promise.resolve([])
+        () => user?.role === Role.SUPPLIER ? supplierService.getInventory() : Promise.resolve([]),
+        { skip: !user || user.role !== Role.SUPPLIER }
     );
 
     const { data: supplierOrders } = useFetch(
-        () => user?.role === Role.SUPPLIER ? supplierService.getOrders() : Promise.resolve([])
+        () => user?.role === Role.SUPPLIER ? supplierService.getOrders() : Promise.resolve([]),
+        { skip: !user || user.role !== Role.SUPPLIER }
     );
 
     const { data: distributorAssignedOrders } = useFetch(
-        () => user?.role === Role.DISTRIBUTOR ? distributorService.getAssignedOrders() : Promise.resolve([])
+        () => user?.role === Role.DISTRIBUTOR ? distributorService.getAssignedOrders() : Promise.resolve([]),
+        { skip: !user || user.role !== Role.DISTRIBUTOR }
     );
 
     const { data: distributorHeldOrders } = useFetch(
-        () => user?.role === Role.DISTRIBUTOR ? distributorService.getHeldOrders() : Promise.resolve([])
+        () => user?.role === Role.DISTRIBUTOR ? distributorService.getHeldOrders() : Promise.resolve([]),
+        { skip: !user || user.role !== Role.DISTRIBUTOR }
     );
 
     const { data: distributorTransporters } = useFetch(
-        () => user?.role === Role.DISTRIBUTOR ? distributorService.getTransporters() : Promise.resolve([])
+        () => user?.role === Role.DISTRIBUTOR ? distributorService.getTransporters() : Promise.resolve([]),
+        { skip: !user || user.role !== Role.DISTRIBUTOR }
     );
 
     const { data: allUsers } = useFetch(
-        () => user?.role === Role.ADMIN ? userService.getAllUsers() : Promise.resolve([])
+        () => user?.role === Role.ADMIN ? userService.getAllUsers() : Promise.resolve([]),
+        { skip: !user || user.role !== Role.ADMIN }
     );
 
     const { data: allRoleRequests } = useFetch(
-        () => user?.role === Role.ADMIN ? roleRequestService.getAll() : Promise.resolve([])
+        () => user?.role === Role.ADMIN ? roleRequestService.getAll() : Promise.resolve([]),
+        { skip: !user || user.role !== Role.ADMIN }
     );
 
     const { data: allProducts } = useFetch(
-        () => user?.role === Role.ADMIN ? orderService.getAvailableProducts() : Promise.resolve([])
+        () => user?.role === Role.ADMIN ? orderService.getAvailableProducts() : Promise.resolve([]),
+        { skip: !user || user.role !== Role.ADMIN }
     );
 
     if (!user) {

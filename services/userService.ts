@@ -25,4 +25,10 @@ export const userService = {
         const response = await axios.get('/user/all');
         return response.data;
     },
+
+    // Delete user by ID (admin only)
+    async deleteUserById(userId: number): Promise<{ message: string }> {
+        const response = await axios.delete(`/user/${userId}`);
+        return response.data;
+    },
 };

@@ -39,8 +39,8 @@ export default function AnalyticsPage() {
         completedOrders: 0,
         totalRevenue: 0,
         totalUsers: users.length,
-        activeSuppliers: users.filter((u: any) => u.roles?.includes('SUPPLIER')).length,
-        activeDistributors: users.filter((u: any) => u.roles?.includes('DISTRIBUTOR')).length,
+        activeSuppliers: users.filter((u: any) => u.role === 'SUPPLIER' || u.supplierProfile).length,
+        activeDistributors: users.filter((u: any) => u.role === 'DISTRIBUTOR' || u.distributorProfile).length,
       });
     } catch (error: any) {
       showToast(error.response?.data?.message || 'Failed to fetch analytics', 'error');
