@@ -453,8 +453,8 @@ export default function SupplierOrdersManagePage() {
 
                 {/* Approve Order Dialog */}
                 <Dialog open={showApproveDialog} onClose={() => setShowApproveDialog(false)}>
-                    <div className="p-6">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Approve Order</h2>
+                    <div className="p-6 max-h-[90vh] overflow-y-auto">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6 sticky top-0 bg-white z-10 pb-2">Approve Order</h2>
                         {selectedOrder && (
                             <div className="mb-6 p-4 bg-gray-50 rounded-lg">
                                 <h3 className="font-semibold text-gray-900 mb-2">Order #{selectedOrder.id}</h3>
@@ -529,8 +529,8 @@ export default function SupplierOrdersManagePage() {
 
                 {/* Reject Order Dialog */}
                 <Dialog open={showRejectDialog} onClose={() => setShowRejectDialog(false)}>
-                    <div className="p-6">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Reject Order</h2>
+                    <div className="p-6 max-h-[90vh] overflow-y-auto">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6 sticky top-0 bg-white z-10 pb-2">Reject Order</h2>
                         {selectedOrder && (
                             <div className="mb-6 p-4 bg-gray-50 rounded-lg">
                                 <h3 className="font-semibold text-gray-900 mb-2">Order #{selectedOrder.id}</h3>
@@ -567,8 +567,8 @@ export default function SupplierOrdersManagePage() {
 
                 {/* Reassign Order Dialog */}
                 <Dialog open={showReassignDialog} onClose={() => setShowReassignDialog(false)}>
-                    <div className="p-6">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Reassign Order</h2>
+                    <div className="p-6 max-h-[90vh] overflow-y-auto">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6 sticky top-0 bg-white z-10 pb-2">Reassign Order</h2>
                         {selectedOrder && (
                             <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
                                 <h3 className="font-semibold text-gray-900 mb-2">Order #{selectedOrder.id}</h3>
@@ -629,8 +629,8 @@ export default function SupplierOrdersManagePage() {
 
                 {/* Tracking History Dialog */}
                 <Dialog open={showTrackingDialog} onClose={() => setShowTrackingDialog(false)}>
-                    <div className="p-6 max-w-3xl">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Order Tracking History</h2>
+                    <div className="p-6 max-w-3xl max-h-[90vh] overflow-y-auto">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6 sticky top-0 bg-white z-10 pb-2">Order Tracking History</h2>
                         {selectedOrder && (
                             <div className="space-y-6">
                                 {/* Order Info Header */}
@@ -784,10 +784,30 @@ export default function SupplierOrdersManagePage() {
                                                             <div>
                                                                 <p className="text-gray-600">From:</p>
                                                                 <p className="font-medium text-gray-900">{leg.fromType}</p>
+                                                                {leg.fromSupplier && (
+                                                                    <p className="text-xs text-gray-500 mt-1">
+                                                                        {leg.fromSupplier.businessName} ({leg.fromSupplier.user?.name})
+                                                                    </p>
+                                                                )}
+                                                                {leg.fromDistributor && (
+                                                                    <p className="text-xs text-gray-500 mt-1">
+                                                                        {leg.fromDistributor.businessName} ({leg.fromDistributor.user?.name})
+                                                                    </p>
+                                                                )}
                                                             </div>
                                                             <div>
                                                                 <p className="text-gray-600">To:</p>
                                                                 <p className="font-medium text-gray-900">{leg.toType}</p>
+                                                                {leg.toDistributor && (
+                                                                    <p className="text-xs text-gray-500 mt-1">
+                                                                        {leg.toDistributor.businessName} ({leg.toDistributor.user?.name})
+                                                                    </p>
+                                                                )}
+                                                                {leg.toType === 'CUSTOMER' && selectedOrder.customer && (
+                                                                    <p className="text-xs text-gray-500 mt-1">
+                                                                        {selectedOrder.customer.name}
+                                                                    </p>
+                                                                )}
                                                             </div>
                                                             {leg.transporter && (
                                                                 <div className="col-span-2">
@@ -815,8 +835,8 @@ export default function SupplierOrdersManagePage() {
 
                 {/* QR Code Dialog */}
                 <Dialog open={showQRDialog} onClose={() => setShowQRDialog(false)}>
-                    <div className="p-6">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Package QR Code</h2>
+                    <div className="p-6 max-h-[90vh] overflow-y-auto">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6 sticky top-0 bg-white z-10 pb-2">Package QR Code</h2>
                         {selectedOrder && (
                             <div className="space-y-4">
                                 {/* Order Info */}

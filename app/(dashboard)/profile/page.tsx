@@ -78,6 +78,40 @@ export default function ProfilePage() {
                             </div>
                         </div>
 
+                        {/* Supplier Profile */}
+                        {(user as any).supplierProfile && (
+                            <div className="flex items-center gap-3">
+                                <User className="h-5 w-5 text-muted-foreground" />
+                                <div className="flex-1">
+                                    <p className="text-sm text-muted-foreground">Supplier Business</p>
+                                    <p className="font-medium">{(user as any).supplierProfile.businessName}</p>
+                                    {(user as any).supplierProfile.businessAddress && (
+                                        <p className="text-sm text-gray-500">{(user as any).supplierProfile.businessAddress}</p>
+                                    )}
+                                    {(user as any).supplierProfile.contactNumber && (
+                                        <p className="text-sm text-gray-500">📞 {(user as any).supplierProfile.contactNumber}</p>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Distributor Profile */}
+                        {(user as any).distributorProfile && (
+                            <div className="flex items-center gap-3">
+                                <User className="h-5 w-5 text-muted-foreground" />
+                                <div className="flex-1">
+                                    <p className="text-sm text-muted-foreground">Distributor Business</p>
+                                    <p className="font-medium">{(user as any).distributorProfile.businessName}</p>
+                                    {(user as any).distributorProfile.businessAddress && (
+                                        <p className="text-sm text-gray-500">{(user as any).distributorProfile.businessAddress}</p>
+                                    )}
+                                    {(user as any).distributorProfile.contactNumber && (
+                                        <p className="text-sm text-gray-500">📞 {(user as any).distributorProfile.contactNumber}</p>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
                         {/* Created At */}
                         <div className="flex items-center gap-3">
                             <User className="h-5 w-5 text-muted-foreground" />
