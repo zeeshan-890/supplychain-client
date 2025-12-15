@@ -15,7 +15,8 @@ export default function ProfilePage() {
 
     if (!user) return null;
 
-    const getInitials = (name: string) => {
+    const getInitials = (name: string | undefined) => {
+        if (!name) return "U";
         return name
             .split(" ")
             .map((n) => n[0])
