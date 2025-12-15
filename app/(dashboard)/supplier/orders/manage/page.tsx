@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import QRCode from "qrcode";
-import { Eye, Check, X, RefreshCw, Package, Truck, Printer, QrCode as QrCodeIcon } from "lucide-react";
+import { Eye, Check, X, RefreshCw, Package, Truck, Printer, QrCode as QrCodeIcon, MapPin, Clock } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
 import { Badge } from "@/components/ui/Badge";
@@ -26,6 +26,7 @@ export default function SupplierOrdersManagePage() {
     const [showRejectDialog, setShowRejectDialog] = useState(false);
     const [showReassignDialog, setShowReassignDialog] = useState(false);
     const [showQRDialog, setShowQRDialog] = useState(false);
+    const [showTrackingDialog, setShowTrackingDialog] = useState(false);
     const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
     const [selectedOrder, setSelectedOrder] = useState<any>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -213,6 +214,11 @@ export default function SupplierOrdersManagePage() {
         } else {
             showToast('QR code not available for this order', 'error');
         }
+    };
+
+    const handleViewTracking = (order: any) => {
+        setSelectedOrder(order);
+        setShowTrackingDialog(true);
     };
 
     const handlePrintQR = () => {
@@ -426,7 +432,12 @@ export default function SupplierOrdersManagePage() {
                                                                 QR Code
                                                             </Button>
                                                         )}
-                                                        <Button variant="ghost" size="sm">
+                                                        <Button 
+                                                            variant="ghost" 
+                                                            size="sm"
+                                                            onClick={() => handleViewTracking(order)}
+                                                            title="View Tracking History"
+                                                        >
                                                             <Eye className="h-4 w-4" />
                                                         </Button>
                                                     </div>
@@ -613,6 +624,193 @@ export default function SupplierOrdersManagePage() {
                                 </Button>
                             </div>
                         </form>
+                    </div>
+                </Dialog>
+
+                {/* Tracking History Dialog */}
+                <Dialog open={showTrackingDialog} onClose={() => setShowTrackingDialog(false)}>
+                    <div className="p-6 max-w-3xl">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Order Tracking History</h2>
+                        {selectedOrder && (
+                            <div className="space-y-6">
+                                {/* Order Info Header */}
+                                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h3 className="font-semibold text-lg text-gray-900">Order #{selectedOrder.id}</h3>
+                                        <Badge variant={getStatusVariant(selectedOrder.status)}>
+                                            {selectedOrder.status}
+                                        </Badge>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4 text-sm">
+                                        <div>
+                                            <p className="text-gray-600">Product:</p>
+                                            <p className="font-semibold text-gray-900">{selectedOrder.product?.name}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-600">Customer:</p>
+                                            <p className="font-semibold text-gray-900">{selectedOrder.customer?.name}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-600">Quantity:</p>
+                                            <p className="font-semibold text-gray-900">{selectedOrder.quantity} units</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-600">Total Amount:</p>
+                                            <p className="font-semibold text-gray-900">{formatCurrency(selectedOrder.totalAmount)}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Tracking Timeline */}
+                                <div>
+                                    <h4 className="font-semibold text-gray-900 mb-4 flex items-center">
+                                        <Clock className="w-5 h-5 mr-2 text-blue-600" />
+                                        Tracking Timeline
+                                    </h4>
+                                    
+                                    {selectedOrder.trackingEvents && selectedOrder.trackingEvents.length > 0 ? (
+                                        <div className="relative">
+                                            {/* Timeline Line */}
+                                            <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+                                            
+                                            {/* Timeline Events */}
+                                            <div className="space-y-6">
+                                                {selectedOrder.trackingEvents
+                                                    .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+                                                    .map((event: any, index: number) => (
+                                                    <div key={event.id} className="relative flex gap-4">
+                                                        {/* Timeline Dot */}
+                                                        <div className="relative z-10 flex-shrink-0">
+                                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                                                                event.eventType === 'ORDER_CREATED' ? 'bg-blue-500' :
+                                                                event.eventType === 'ORDER_APPROVED' ? 'bg-green-500' :
+                                                                event.eventType === 'SHIPPED' ? 'bg-indigo-500' :
+                                                                event.eventType === 'IN_TRANSIT' ? 'bg-yellow-500' :
+                                                                event.eventType === 'DELIVERED' ? 'bg-emerald-500' :
+                                                                event.eventType === 'REJECTED' ? 'bg-red-500' :
+                                                                'bg-gray-500'
+                                                            }`}>
+                                                                {event.eventType === 'SHIPPED' || event.eventType === 'IN_TRANSIT' ? (
+                                                                    <Truck className="w-4 h-4 text-white" />
+                                                                ) : event.eventType === 'DELIVERED' ? (
+                                                                    <Package className="w-4 h-4 text-white" />
+                                                                ) : event.eventType === 'REJECTED' ? (
+                                                                    <X className="w-4 h-4 text-white" />
+                                                                ) : (
+                                                                    <Check className="w-4 h-4 text-white" />
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Event Details */}
+                                                        <div className="flex-1 pb-6">
+                                                            <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                                                                <div className="flex items-start justify-between mb-2">
+                                                                    <div>
+                                                                        <h5 className="font-semibold text-gray-900">
+                                                                            {event.eventType.replace(/_/g, ' ')}
+                                                                        </h5>
+                                                                        <p className="text-sm text-gray-600 mt-1">
+                                                                            {event.description}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
+                                                                    <div className="flex items-center gap-1">
+                                                                        <Clock className="w-3 h-3" />
+                                                                        {formatDate(event.timestamp)}
+                                                                    </div>
+                                                                    {event.location && (
+                                                                        <div className="flex items-center gap-1">
+                                                                            <MapPin className="w-3 h-3" />
+                                                                            {event.location}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
+                                                                {/* Show actor information if available */}
+                                                                {(event.fromUser || event.toUser) && (
+                                                                    <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-600">
+                                                                        {event.fromUser && (
+                                                                            <p>From: <span className="font-medium">{event.fromUser.name}</span></p>
+                                                                        )}
+                                                                        {event.toUser && (
+                                                                            <p>To: <span className="font-medium">{event.toUser.name}</span></p>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
+                                            <Clock className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                                            <p className="text-gray-500">No tracking events yet</p>
+                                            <p className="text-sm text-gray-400 mt-1">Events will appear here once the order is processed</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Order Legs Information */}
+                                {selectedOrder.legs && selectedOrder.legs.length > 0 && (
+                                    <div>
+                                        <h4 className="font-semibold text-gray-900 mb-4 flex items-center">
+                                            <Truck className="w-5 h-5 mr-2 text-blue-600" />
+                                            Delivery Legs ({selectedOrder.legs.length})
+                                        </h4>
+                                        <div className="space-y-3">
+                                            {selectedOrder.legs
+                                                .sort((a: any, b: any) => a.legNumber - b.legNumber)
+                                                .map((leg: any) => (
+                                                <div key={leg.id} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <h5 className="font-semibold text-gray-900">
+                                                            Leg #{leg.legNumber}
+                                                        </h5>
+                                                        <Badge variant={
+                                                            leg.status === 'PENDING' ? 'warning' :
+                                                            leg.status === 'ACCEPTED' ? 'info' :
+                                                            leg.status === 'IN_TRANSIT' ? 'default' :
+                                                            leg.status === 'DELIVERED' ? 'success' :
+                                                            leg.status === 'REJECTED' ? 'destructive' : 'default'
+                                                        }>
+                                                            {leg.status}
+                                                        </Badge>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                                        <div>
+                                                            <p className="text-gray-600">From:</p>
+                                                            <p className="font-medium text-gray-900">{leg.fromType}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-gray-600">To:</p>
+                                                            <p className="font-medium text-gray-900">{leg.toType}</p>
+                                                        </div>
+                                                        {leg.transporter && (
+                                                            <div className="col-span-2">
+                                                                <p className="text-gray-600">Transporter:</p>
+                                                                <p className="font-medium text-gray-900">{leg.transporter.name} - {leg.transporter.phone}</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Close Button */}
+                                <div className="flex justify-end pt-4 border-t">
+                                    <Button variant="outline" onClick={() => setShowTrackingDialog(false)}>
+                                        Close
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </Dialog>
 
